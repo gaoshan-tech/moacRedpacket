@@ -1,8 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 
-import "./libs/SolRsaVerify.sol";
 import "./libs/SafeMath.sol";
-
 
 /* 
     红包合约
@@ -22,18 +20,13 @@ import "./libs/SafeMath.sol";
         2. 查询用户红包记录
 */
 contract RedPacket {
-    using SolRsaVerify for *;
     using SafeMath for uint256;
     //红包类
     struct Packet {
-        //红包id
-        uint256 id;
+        //红包id/红包公钥地址
+        address addr;
         //红包所有者
         address owner;
-        //公钥modulus 模数
-        bytes pub_m;
-        //公钥exponent 指数
-        bytes pub_e;
         //红包发送时间
         uint256 startTime;
         //红包描述
@@ -53,51 +46,61 @@ contract RedPacket {
         //各地址所抢金额
         mapping(address => uint256) addressAmount;
     }
-    //个人发送的红包数组
-    mapping(address => uint256[]) private _ownedRedPacket;
+    //个人最后一次创建红包的区块高度
+    mapping(address => uint256) private createLastBlockNum;
+    //个人最后一次抢红包的区块高度
+    mapping(address => uint256) private receiveLastBlockNum;
     //红包id对应的红包
-    mapping(uint256 => Packet) _redPacket;
-    //默认的有效时间段
+    mapping(address => Packet) _redPacket;
+    //红包默认的有效时间
     uint256 validTime = 1000000;
-    // 全局随机种子
-    bytes32 seed;
-    //创建红包事件 地址、红包id、金额、个数、红包描述、是否随机
-    event CreatedRedPacketEvent(
+    //红包平均的最低金额
+    uint256 minAmount = 1000000;
+    //创建红包事件 地址、红包id、金额、个数、红包描述、是否随机、上一次创建红包的区块高度
+    event CreateRedPacketEvent(
+        address,
         address,
         uint256,
         uint256,
-        uint256,
         string,
-        bool
+        bool,
+        uint256
     );
-    //领取红包事件 地址、红包id、金额
-    event ReceiveRedPacketEvent(address, uint256, uint256);
+    //领取红包事件 地址、红包id、金额、上一次抢红包的区块高度
+    event ReceiveRedPacketEvent(address, address, uint256, uint256);
     //回收红包事件 回收的地址 、红包id、回收的金额
-    event RecyclePacketEvent(address, uint256, uint256);
+    event RecyclePacketEvent(address, address, uint256);
+
+    constructor(uint256 _validTime, uint256 _minAmount) public {
+        validTime = _validTime;
+        minAmount = _minAmount;
+    }
 
     //创建红包
-    function createdRedPacket(
+    function createRedPacket(
         uint256 totalnumber,
         bool isRandom,
         string memory description,
-        bytes memory pub_e,
-        bytes memory pub_m
-    ) public payable returns (uint256 packetId) {
+        address redPacketAddr
+    ) public payable returns (bool result) {
         //检查金额是否大于0
-        require(msg.value > 0, "value must greater than 0");
+        // require(msg.value > 0, "amount must greater than 0");
         //检查红包个数大于0
-        require(totalnumber > 0, "totalnumber must greater than 0");
-        //检查pub_e
-        require(pub_e.length > 0, "pub_e no null");
-        //检查pub_m
-        require(pub_m.length > 0, "pub_e no null");
-
-        Packet memory packet;
-        packet.id = uint256(
-            keccak256(
-                abi.encode(msg.sender, _ownedRedPacket[msg.sender].length)
-            )
+        // require(totalnumber > 0, "totalnumber must greater than 0");
+        //检查redPacketAddr
+        require(uint256(redPacketAddr) != 0, "redPacketAddr no null");
+        //检查redPacketAdd是否重复
+        require(
+            _redPacket[redPacketAddr].addr == address(0),
+            "redPacketAddr is exist"
         );
+        //检查平均金额
+        require(
+            ((msg.value).div(totalnumber)) > minAmount,
+            "The average amount of redPacket too low "
+        );
+        Packet memory packet;
+        packet.addr = redPacketAddr;
         packet.owner = msg.sender;
         packet.description = description;
         packet.startTime = block.timestamp;
@@ -106,65 +109,64 @@ contract RedPacket {
         packet.totalAmount = msg.value;
         packet.remainAmount = msg.value;
         packet.isRandom = isRandom;
-        packet.pub_e = pub_e;
-        packet.pub_m = pub_m;
-        //红包存入发送者列表
-        _ownedRedPacket[msg.sender].push(packet.id);
         //红包放入红包池
-        _redPacket[packet.id] = packet;
-        emit CreatedRedPacketEvent(
+        _redPacket[packet.addr] = packet;
+        //创建红包事件
+        emit CreateRedPacketEvent(
             msg.sender,
-            packet.id,
+            packet.addr,
             packet.totalAmount,
             totalnumber,
             description,
-            isRandom
+            isRandom,
+            createLastBlockNum[msg.sender]
         );
-        return packet.id;
+        //最后一次发红包的区块高度
+        createLastBlockNum[msg.sender] = block.number;
+        return true;
     }
 
     //抢红包
-    function receiveRedPacket(uint256 packetId, bytes memory sign)
+    function receiveRedPacket(address packetAddr, bytes memory signedMessage)
         public
-        returns (bool)
+        returns (uint256)
     {
         //检查红包是否存在
-        require(_redPacket[packetId].id != 0, "packetId error");
+        require(_redPacket[packetAddr].addr != address(0), "packetAddr error");
         //检查红包是否抢完
-        require(_redPacket[packetId].remainNumber > 0, "packet over ");
+        require(_redPacket[packetAddr].remainNumber > 0, "packet over ");
         //检查红包是否过期
         require(
-            _redPacket[packetId].startTime + validTime > block.timestamp,
+            _redPacket[packetAddr].startTime + validTime > block.timestamp,
             " Red packet expired "
         );
         //检查红包是否抢过
         require(
-            _redPacket[packetId].addressAmount[msg.sender] == 0,
+            _redPacket[packetAddr].addressAmount[msg.sender] == 0,
             "packet have received"
         );
         //检查签名是否正确
-        require(
-            SolRsaVerify.pkcs1Sha256VerifyRaw(
-                abi.encodePacked(msg.sender, packetId),
-                sign,
-                _redPacket[packetId].pub_e,
-                _redPacket[packetId].pub_m
-            ) == 0,
-            "sign error"
-        );
-        uint256 amount = calculateRedPacket(packetId);
+        require(decode(signedMessage) == packetAddr, "signMessage error");
+        uint256 amount = calculateRedPacket(packetAddr);
         msg.sender.transfer(amount);
         //抢红包事件
-        emit ReceiveRedPacketEvent(msg.sender, packetId, amount);
-        return true;
+        emit ReceiveRedPacketEvent(
+            msg.sender,
+            packetAddr,
+            amount,
+            receiveLastBlockNum[msg.sender]
+        );
+        //最后一次抢红包的区块高度
+        receiveLastBlockNum[msg.sender] = block.number;
+        return amount;
     }
 
     //获取红包基本信息
-    function queryPacketInfo(uint256 packetId)
+    function queryPacketInfo(address packetAddr)
         public
         view
         returns (
-            uint256 id,
+            address addr,
             address owner,
             uint256 startTime,
             string memory description,
@@ -175,11 +177,11 @@ contract RedPacket {
             uint256 remainAmount
         )
     {
-        Packet memory packet = _redPacket[packetId];
+        Packet memory packet = _redPacket[packetAddr];
         //检查红包是否存在
-        require(packet.id != 0, "packetId error");
+        require(packet.addr != address(0), "packetAddr error");
         return (
-            packet.id,
+            packet.addr,
             packet.owner,
             packet.startTime,
             packet.description,
@@ -191,56 +193,56 @@ contract RedPacket {
         );
     }
 
-    //获取红包领取详情
-    function queryPacketDetails(uint256 packetId, uint256 addressArraryIndex)
-        public
-        view
-        returns (address account, uint256 amount)
-    {
-        Packet storage packet = _redPacket[packetId];
-        //检查红包是否存在
-        require(packet.id != 0, "packetId error");
-        return (
-            packet.addressArrary[addressArraryIndex],
-            packet.addressAmount[packet.addressArrary[addressArraryIndex]]
-        );
-    }
+    // //获取红包领取详情
+    // function queryPacketDetails(uint256 packetAddr, uint256 addressArraryIndex)
+    //     public
+    //     view
+    //     returns (address account, uint256 amount)
+    // {
+    //     Packet storage packet = _redPacket[packetAddr];
+    //     //检查红包是否存在
+    //     require(packet.addr != 0, "packetAddr error");
+    //     return (
+    //         packet.addressArrary[addressArraryIndex],
+    //         packet.addressAmount[packet.addressArrary[addressArraryIndex]]
+    //     );
+    // }
 
-    //获取个人已发送的红包
-    function queryOwnedRedPacket()
-        public
-        view
-        returns (uint256[] memory packetIds)
-    {
-        return _ownedRedPacket[msg.sender];
-    }
+    // //获取个人已发送的红包
+    // function queryOwnedRedPacket()
+    //     public
+    //     view
+    //     returns (uint256[] memory packetIds)
+    // {
+    //     return _ownedRedPacket[msg.sender];
+    // }
 
     //收回未领完的过期红包
-    function recyclePacket(uint256 packetId) public returns (bool) {
+    function recyclePacket(address packetAddr) public returns (uint256) {
         //检查红包是否存在
-        require(_redPacket[packetId].id != 0, "packetId error");
+        require(_redPacket[packetAddr].addr != address(0), "packetAddr error");
         //检查红包是否抢完
-        require(_redPacket[packetId].remainNumber > 0, "packet over ");
+        require(_redPacket[packetAddr].remainNumber > 0, "packet over ");
         //检查红包是否过期
         require(
-            _redPacket[packetId].startTime + validTime <= block.timestamp,
+            _redPacket[packetAddr].startTime + validTime <= block.timestamp,
             " Red packet no expired "
         );
-        address(uint160(_redPacket[packetId].owner)).transfer(
-            _redPacket[packetId].remainAmount
-        );
+        uint256 remainAmount = _redPacket[packetAddr].remainAmount;
+        _redPacket[packetAddr].remainAmount = 0;
+        address(uint160(_redPacket[packetAddr].owner)).transfer(remainAmount);
         //回收事件
         emit RecyclePacketEvent(
-            _redPacket[packetId].owner,
-            packetId,
-            _redPacket[packetId].remainAmount
+            _redPacket[packetAddr].owner,
+            packetAddr,
+            remainAmount
         );
-        return true;
+        return remainAmount;
     }
 
     //计算红包大小
-    function calculateRedPacket(uint256 packetId) private returns (uint256) {
-        Packet storage packet = _redPacket[packetId];
+    function calculateRedPacket(address packetAddr) private returns (uint256) {
+        Packet storage packet = _redPacket[packetAddr];
         uint256 amount;
         if (packet.remainNumber == 1) {
             //如果只有一个红包，则发送全部
@@ -248,12 +250,11 @@ contract RedPacket {
         } else {
             if (packet.isRandom) {
                 //如果是随机红包
-                seed = keccak256(
-                    abi.encodePacked(block.timestamp, msg.sender, seed)
-                );
-                amount = (uint256(seed) % 100).mul(packet.remainAmount).div(
-                    100
-                );
+                uint256 pct = uint256(
+                    keccak256(abi.encodePacked(block.timestamp, msg.sender))
+                ) % 100;
+                amount = packet.remainAmount.getPercent(pct);
+                amount = amount < minAmount ? minAmount : amount;
             } else {
                 amount = packet.remainAmount.div(packet.remainNumber);
             }
@@ -269,20 +270,57 @@ contract RedPacket {
         return amount;
     }
 
-    function getAbiCode(uint256 packetId)
-        public
-        view
-        returns (
-            bytes memory abicode,
-            bytes memory encodePacked,
-            bytes32 ascicccode
-        )
-    {
-        return (
-            abi.encode(msg.sender, packetId),
-            abi.encodePacked(msg.sender, packetId),
-            keccak256(abi.encodePacked(msg.sender, packetId))
+    //验证签名入口函数
+    function decode(bytes memory signedMessage) private view returns (address) {
+        //这是一个已经签名的数据
+        //   bytes memory signedMessage =hex"f4128988cbe7df8315440adde412a8955f7f5ff9a5468a791433727f82717a6753bd71882079522207060b681fbd3f5623ee7ed66e33fc8e581f442acbcf6ab800";
+
+        bytes32 r = bytesToBytes32(slice(signedMessage, 0, 32));
+        bytes32 s = bytesToBytes32(slice(signedMessage, 32, 32));
+        bytes1 v = slice(signedMessage, 64, 1)[0];
+        return ecrecoverDecode(r, s, v);
+    }
+
+    //切片函数
+    function slice(
+        bytes memory data,
+        uint256 start,
+        uint256 len
+    ) private pure returns (bytes memory) {
+        bytes memory b = new bytes(len);
+        for (uint256 i = 0; i < len; i++) {
+            b[i] = data[i + start];
+        }
+        return b;
+    }
+
+    //使用ecrecover恢复出公钥，后对比
+    function ecrecoverDecode(
+        bytes32 r,
+        bytes32 s,
+        bytes1 v1
+    ) private view returns (address addr) {
+        //此处贼坑
+        //web3.eth.sign(msghash,address)生成的签名v值是没有加上27的，msghash=web3.sha3(msg)
+        //web3.eth.accounts.create().sign(msghash)生成的签名v值是加过27的
+        //如果要用ecrecover()算法来验签，需对v值加27来组成27，28这两个值中的一个2。
+        uint8 v = uint8(v1);
+        // uint8 v=uint8(v1)+27;
+        bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+        bytes32 prefixedHash = keccak256(
+            abi.encodePacked(prefix, keccak256(abi.encodePacked(msg.sender)))
         );
+        addr = ecrecover(prefixedHash, v, r, s);
+    }
+
+    //bytes转换为bytes32
+    function bytesToBytes32(bytes memory source)
+        private
+        pure
+        returns (bytes32 result)
+    {
+        assembly {
+            result := mload(add(source, 32))
+        }
     }
 }
-

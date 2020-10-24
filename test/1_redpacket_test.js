@@ -2,10 +2,10 @@
 /* global contract */
 /* global web3 */
 /* global assert */
+const AdderV2 = artifacts.require('RedPacket');
+// const SolRsaVerify = artifacts.require('../contracts/SolRsaVerify.sol')
 
-const SolRsaVerify = artifacts.require('../contracts/SolRsaVerify.sol')
-
-contract('SolRsaVerify-openssl', (accounts) => {
+contract('RedPacket', (accounts) => {
   beforeEach(async () => {
     v = await SolRsaVerify.new()
   })
