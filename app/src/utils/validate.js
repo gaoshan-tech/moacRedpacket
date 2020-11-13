@@ -26,4 +26,10 @@ export function validatAlphabets(str) {
   const reg = /^[A-Za-z]+$/
   return reg.test(str)
 }
-
+/* 是否为空*/
+export function validatBlank(str) {
+  if (str == null || str == undefined || str == '') {
+    return true
+  }
+  return false
+}

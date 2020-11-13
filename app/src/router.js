@@ -11,7 +11,21 @@ const routes = [
   {
     path: '/',
     name: '/',
-    redirect: '/select-wallet'
+    redirect: '/homepage'
+  },
+  {
+    name: 'homepage',
+    component: () => import('./view/homepage'),
+    meta: {
+      title: '墨客红包首页'
+    }
+  },
+  {
+    name: 'select-wallet',
+    component: () => import('./view/select-wallet'),
+    meta: {
+      title: '选择钱包'
+    }
   },
   {
     name: 'create-red-envelope',
@@ -28,6 +42,13 @@ const routes = [
     }
   },
   {
+    name: 'get-packet',
+    component: () => import('./view/get-packet'),
+    meta: {
+      title: '抢红包'
+    }
+  },
+  {
     name: 'packet-details',
     component: () => import('./view/packet-details'),
     meta: {
@@ -35,10 +56,17 @@ const routes = [
     }
   },
   {
-    name: 'personal-packets',
-    component: () => import('./view/personal-packets'),
+    name: 'receive-record',
+    component: () => import('./view/receive-record'),
     meta: {
-      title: '红包记录'
+      title: '红包领取记录'
+    }
+  },
+  {
+    name: 'create-record',
+    component: () => import('./view/create-record'),
+    meta: {
+      title: '红包领取记录'
     }
   },
   {
@@ -69,13 +97,7 @@ const routes = [
             title: '投票详情(投票后的状态页面)'
         }
     },
-  {
-    name: 'select-wallet',
-    component: () => import('./view/select-wallet'),
-    meta: {
-      title: '选择钱包'
-    }
-  },
+
   {
     name: 'vote-people-list',
     component: () => import('./view/vote-people-list'),

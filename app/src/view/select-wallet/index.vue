@@ -2,9 +2,9 @@
     <div class="select-container">
        <!-- <van-row type="flex" justify="center">
             <van-col span="24">
-                <van-nav-bar title="钱包"/>
+                <van-nav-bar title="墨客红包"/>
             </van-col>
-        </van-row>-->
+        </van-row> -->
 
         <van-row type="flex" justify="center" class="container mt_30">
             <van-col span="22">

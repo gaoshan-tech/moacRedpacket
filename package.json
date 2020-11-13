@@ -6,9 +6,11 @@
     "test": "test"
   },
   "dependencies": {
+    "chain3": "^0.1.22",
     "node-rsa": "^1.0.8",
     "solc": "^0.6.0",
-    "truffle": "^5.1.6"
+    "truffle": "^5.1.6",
+    "tp-js-sdk": "^3.3.0"
   },
   "scripts": {
     "test": "truffle test"

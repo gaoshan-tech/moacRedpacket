@@ -1,0 +1,359 @@
+<template>
+  <div>
+    <!-- <van-row type="flex"
+             justify="center">
+      <van-col span="24">
+        <van-nav-bar title="首页" />
+ </van-col>
+    </van-row> -->
+    <van-row type="flex"
+             justify="center"
+             class="mt_30">
+      <van-col span="22">
+        <p class="select-title">请选择墨客钱包</p>
+      </van-col>
+    </van-row>
+
+    <van-row type="flex"
+             justify="center"
+             class="mt_10">
+      <van-col span="22">
+        <van-dropdown-menu class="dropdown-wrap">
+          <van-dropdown-item v-model="account"
+                             :options="addOpt"
+                             @closed="bindAccount"
+                             class="dropdown-item-wrap" />
+        </van-dropdown-menu>
+      </van-col>
+    </van-row>
+    <van-divider />
+    <van-row type="flex"
+             class="mt_30"
+             justify="center"
+             style="flex-wrap: wrap"
+             @click="createRedEnvelope">
+
+      <svg t="1603864671123"
+           class="icon"
+           viewBox="0 0 1024 1024"
+           version="1.1"
+           xmlns="http://www.w3.org/2000/svg"
+           p-id="12696"
+           width="350"
+           height="350">
+        <path d="M567.360797 201.393619m42.390345 11.358458l368.796 98.818591q42.390345 11.358459 31.031886 53.748803l-159.775652 596.290851q-11.358459 42.390345-53.748803 31.031886l-368.796-98.81859q-42.390345-11.358459-31.031887-53.748804l159.775652-596.29085q11.358459-42.390345 53.748804-31.031887Z"
+              fill="#D8000F"
+              p-id="12697"></path>
+        <path d="M567.360797 201.393619m42.390345 11.358458l368.796 98.818591q42.390345 11.358459 31.031886 53.748803l-159.775652 596.290851q-11.358459 42.390345-53.748803 31.031886l-368.796-98.81859q-42.390345-11.358459-31.031887-53.748804l159.775652-596.29085q11.358459-42.390345 53.748804-31.031887Z"
+              fill="#D8000F"
+              p-id="12698"></path>
+        <path d="M648.979017 223.26272c-23.411566-6.272731-47.475566 7.621486-53.748297 31.033051l-159.776183 596.289829c-6.272731 23.411566 7.621486 47.475566 31.031589 53.74976l-39.227977-10.512091c-23.411566-6.272731-37.30432-30.336731-31.031589-53.748298L556.002743 243.785143c6.272731-23.413029 30.336731-37.305783 53.748297-31.033052z"
+              fill="#C40714"
+              p-id="12699"></path>
+        <path d="M847.75936 969.240869c-5.144869 19.197074-24.877349 30.589806-44.075886 25.4464l-384.055588-102.907612c-19.197074-5.144869-30.588343-24.877349-25.4464-44.075886 90.085669-33.813943 172.924343-40.594286 248.521874-20.338102 75.596069 20.256183 143.948069 67.547429 205.056 141.8752z"
+              fill="#FFE400"
+              p-id="12700"></path>
+        <path d="M642.70336 827.365669c75.596069 20.256183 143.930514 67.607406 205.007726 142.055131a36.038949 36.038949 0 0 1-4.578743 10.308754c-60.727589-73.491017-128.605623-120.287817-203.637029-140.391863-75.596069-20.256183-158.452297-13.415863-248.568685 20.519498l2.018742-0.754835c-0.182857-3.496229 0.146286-7.074377 1.038629-10.63936l0.149211-0.577828c90.117851-33.93536 172.97408-40.77568 248.568686-20.519497z"
+              fill="#FFA700"
+              p-id="12701"></path>
+        <path d="M565.471817 232.475794l-14.793874 9.450057 171.250834 268.037852a8.777143 8.777143 0 0 0 11.44832 3.060297l282.444069-146.944-8.101303-15.573577-275.321417 143.238583-166.926629-261.269212z"
+              fill="#FFE400"
+              p-id="12702"></path>
+        <path d="M602.492343 210.807954l383.757166 102.827155c19.157577 5.133166 30.526903 24.824686 25.393737 43.982262L729.028023 505.197714l-171.081143-268.672731c5.198994-19.403337 25.143589-30.917486 44.546926-25.718492z"
+              fill="#D8000F"
+              p-id="12703"></path>
+        <path d="M638.357211 220.417463c-19.403337-5.198994-39.347931 6.315154-44.546925 25.718491L751.104 493.458286l-22.326126 11.6736L557.948343 236.527909c5.198994-19.403337 25.143589-30.917486 44.546926-25.718492z"
+              fill="#C40714"
+              p-id="12704"></path>
+        <path d="M980.819383 303.092297c28.092709 7.527863 44.764891 36.404663 37.237028 64.498834l-159.77472 596.289829c-7.527863 28.095634-36.404663 44.766354-64.498834 37.239954l-368.796526-98.818925c-28.092709-7.527863-44.764891-36.404663-37.237028-64.498835l159.77472-596.289828c7.527863-28.095634 36.404663-44.766354 64.498834-37.239955l368.796526 98.818926z m-2.271817 8.47872l-368.796526-98.818926c-23.411566-6.272731-47.475566 7.621486-53.748297 31.031589L396.22656 840.074971c-6.272731 23.413029 7.621486 47.477029 31.031589 53.74976l368.796525 98.818926c23.411566 6.272731 47.475566-7.621486 53.748297-31.031588l159.776183-596.289829c6.272731-23.413029-7.621486-47.477029-31.031588-53.74976z"
+              fill="#91000A"
+              p-id="12705"></path>
+        <path d="M729.216731 504.492617m-51.574919-13.819458a53.394286 53.394286 0 1 0 103.149839 27.638916 53.394286 53.394286 0 1 0-103.149839-27.638916Z"
+              fill="#FFE400"
+              p-id="12706"></path>
+        <path d="M743.358171 453.004434c2.042149 0.547109 4.02432 1.203931 5.943589 1.961692-26.615223-3.946789-52.501943 12.485486-59.590949 38.941257-7.089006 26.455771 7.113874 53.629806 32.137509 63.51872a54.680137 54.680137 0 0 1-6.129371-1.272686c-28.66176-7.68-45.709897-36.995657-38.078172-65.480411 7.633189-28.483291 37.055634-45.348571 65.717394-37.668572z"
+              fill="#FFA700"
+              p-id="12707"></path>
+        <path d="M9.791822 163.485036m42.390344-11.358459l450.750667-120.778277q42.390345-11.358459 53.748804 31.031886l193.093797 720.635862q11.358459 42.390345-31.031886 53.748804l-450.750667 120.778277q-42.390345 11.358459-53.748803-31.031886l-193.093798-720.635863q-11.358459-42.390345 31.031886-53.748803Z"
+              fill="#D8000F"
+              p-id="12708"></path>
+        <path d="M9.791822 163.485036m42.390344-11.358459l450.750667-120.778277q42.390345-11.358459 53.748804 31.031886l193.093797 720.635862q11.358459 42.390345-31.031886 53.748804l-450.750667 120.778277q-42.390345 11.358459-53.748803-31.031886l-193.093798-720.635863q-11.358459-42.390345 31.031886-53.748803Z"
+              fill="#D8000F"
+              p-id="12709"></path>
+        <path d="M98.811611 139.63264c-23.411566 6.272731-37.305783 30.336731-31.031588 53.748297L260.871314 914.016549c6.274194 23.411566 30.338194 37.305783 53.74976 31.031588l-46.630034 12.494263c-23.411566 6.274194-47.475566-7.620023-53.748297-31.031589L21.149989 205.8752c-6.272731-23.411566 7.621486-47.475566 31.031588-53.748297z"
+              fill="#C40714"
+              p-id="12710"></path>
+        <path d="M750.116571 784.287451c6.085486 22.709394-7.391817 46.050743-30.101211 52.136229l-453.295543 121.461029c-22.707931 6.084023-46.050743-7.39328-52.136228-30.101212 72.118857-87.878217 152.804206-143.775451 242.058971-167.691703 89.254766-23.916251 187.080411-15.850057 293.474011 24.195657z"
+              fill="#FFE400"
+              p-id="12711"></path>
+        <path d="M456.64256 760.091794c89.254766-23.916251 187.080411-15.850057 293.474011 24.195657a42.53696 42.53696 0 0 1 1.404343 13.238858c-105.473463-39.273326-202.503314-47.041097-291.09248-23.303315-89.254766 23.914789-169.940114 79.812023-242.057508 167.69024l1.61792-1.961691a42.500389 42.500389 0 0 1-5.216549-11.490743l-0.187246-0.677303c72.115931-87.878217 152.802743-143.775451 242.057509-167.691703z"
+              fill="#FFA700"
+              p-id="12712"></path>
+        <path d="M351.0272 367.115703L24.65792 197.204846l-8.105691 15.570651 333.513874 173.62944a8.777143 8.777143 0 0 0 11.460023-3.077851L563.401874 65.677897 548.586057 56.261486 351.0272 367.115703z"
+              fill="#FFE400"
+              p-id="12713"></path>
+        <path d="M51.257051 152.374126l453.125852-121.414217c22.611383-6.059154 45.851794 7.358171 51.909486 29.969554L354.41664 378.578651 20.902766 204.949211c-6.136686-22.899566 7.453257-46.4384 30.354285-52.575085z"
+              fill="#D8000F"
+              p-id="12714"></path>
+        <path d="M93.647726 141.016503c-22.901029 6.135223-36.490971 29.674057-30.354286 52.575086l307.084434 159.871268-15.961234 25.117257L20.902766 204.947749c-6.136686-22.899566 7.453257-46.4384 30.354285-52.575086z"
+              fill="#C40714"
+              p-id="12715"></path>
+        <path d="M500.661394 22.870309c28.094171-7.527863 56.970971 9.14432 64.497372 37.238491l193.094217 720.635611c7.527863 28.094171-9.142857 56.970971-37.237029 64.497372l-450.750171 120.779337c-28.095634 7.527863-56.972434-9.14432-64.500297-37.238491L12.672731 208.147017c-7.527863-28.094171 9.142857-56.970971 37.237029-64.497371l450.750171-120.779337z m2.271817 8.47872l-450.750171 120.777874c-23.413029 6.272731-37.305783 30.336731-31.033051 53.748297l193.094217 720.635611c6.272731 23.411566 30.336731 37.305783 53.748297 31.031589l450.750171-120.777874c23.413029-6.272731 37.305783-30.336731 31.033052-53.748297L556.681509 62.380617c-6.272731-23.411566-30.336731-37.305783-53.748298-31.031588z"
+              fill="#91000A"
+              p-id="12716"></path>
+        <path d="M355.1232 378.389943m-60.759494 16.280457a62.902857 62.902857 0 1 0 121.518988-32.560915 62.902857 62.902857 0 1 0-121.518988 32.560915Z"
+              fill="#FFE400"
+              p-id="12717"></path>
+        <path d="M338.8416 317.630171a63.566994 63.566994 0 0 1 7.176777-1.487725c-29.292251 11.600457-45.8752 43.574126-37.525211 74.74176 8.351451 31.166171 38.699886 50.56512 69.866057 45.965897a63.550903 63.550903 0 0 1-6.955886 2.298148c-33.55648 8.992183-68.049189-10.921691-77.039908-44.478171-8.992183-33.557943 10.923154-68.049189 44.479634-77.039909z"
+              fill="#FFA700"
+              p-id="12718"></path>
+      </svg>
+      <van-col :span="24"
+               style="text-align: center ;font-size: 18px"
+               class="packet-amount-msg">创建红包</van-col>
+    </van-row>
+
+    <van-tabbar inactive-color="#1989fa">
+      <van-tabbar-item :to="'/create-record?account='+account"
+                       icon="home-o">
+        发送记录
+      </van-tabbar-item>
+      <!-- <van-tabbar-item :to="{ path: 'receive-record', query: { account: '{{to}}' }}" -->
+      <van-tabbar-item :to="'/receive-record?account='+account"
+                       icon="records">
+        领取记录
+      </van-tabbar-item>
+    </van-tabbar>
+
+  </div>
+</template>
+
+<script>
+import { DropdownMenu, DropdownItem, NavBar, Dialog } from 'vant';
+import Vue from 'vue';
+export default {
+  name: "index",
+  components: {
+    [DropdownMenu.name]: DropdownMenu,
+    [DropdownItem.name]: DropdownItem,
+    [NavBar.name]: NavBar,
+  },
+  data () {
+    return {
+      account: this.$account,
+      addOpt: [
+      ],
+      msg: {
+        formAddress: '0xb7bc89ba2e49f52782da4f926be5a7a7ac1f1a94',
+        amount: '0.01',
+      },
+      showFormAddress: '',
+      qrCode: {
+        packetId: null,
+        key: null,
+        sign: null
+      },
+      contract: {
+        account: null,
+        instance: null
+      }
+    }
+  },
+  created () {
+    this.getWalletAddress();
+  },
+  mounted () {
+  },
+  methods: {
+    // 获取钱包地址
+    getWalletAddress () {
+      // tp.getCurrentWallet().then((res) => {
+      //   console.log(res.data.blockchain)
+      //   if (res.data.blockchain != "eth") {
+      //               // console.log("res.data   2323")
+      //     Dialog.confirm({
+      //       title: '提示',
+      //       message: '请切换moac钱包。',
+      //       confirmButtonText: '确定',
+      //       // beforeClose,
+      //     })
+      //     // tp.back()
+      //     // tp.close()
+      //     console.log("res.data   2323")
+      //   }
+      //    console.log("res.data")
+      // })
+      console.log("account")
+      console.log(this.$account)
+      this.$tp.getWalletList(3).then(res => {
+        console.log('resdata', res);
+        localStorage.clear();
+        const optData = res.wallets.moac;
+        // this._blockchain = optData.blockchain;
+        for (let index in optData) {
+          // console.info("address"+optData[index].address);
+          // console.info(optData[index].name);
+          let item = {
+            text: optData[index].name + ":" + optData[index].address,
+            value: optData[index].address
+          }
+          this.addOpt.push(item);
+          // this.value = this.addOpt[0].value;
+        }
+        // this.handleCreateRedEnvelope();
+      })
+    },
+    bindAccount () {
+      Vue.prototype.$account = this.account;
+    },
+    createRedEnvelope () {
+      /* for(let i = 0; i < this.msg.packetIds.length; i++) {
+           this.getPacketMsg(this.msg.packetIds[i], true);
+       }*/
+      if (this.account == undefined) {
+        Dialog.alert({
+          message: '请选择钱包地址',
+        }).then(() => {
+          // on close
+        });
+      } else {
+        this.$router.push({ path: '/create-red-envelope', query: { account: this.account } })
+      }
+    },
+
+  },
+  filters: {
+    handleStr (str) {
+      if (str.length > 12) {
+        const str1 = str.substring(0, 8);
+        const str2 = str.substr(str.length - 4, 4);
+        const _subStr = str1 + "..." + str2;
+        return _subStr;
+      } else {
+        return str;
+      }
+    }
+  }
+}
+</script>
+
+<style scoped lang="less">
+.select-title {
+  font-size: 14px;
+  text-align: left;
+  /*text-indent: 10px;*/
+}
+.bg-style {
+  background: #efefef;
+}
+.color_fff {
+  background: #fff;
+}
+.mt_30 {
+  margin-top: 30px;
+}
+.mt_20 {
+  margin-top: 20px;
+}
+.mt_10 {
+  margin-top: 10px;
+}
+.container {
+  position: relative;
+  background: #fff;
+  .packet-image {
+    z-index: 99;
+    position: fixed;
+    top: -66px;
+    width: 107%;
+    height: 200px;
+    border-radius: 0 0 220px 220px;
+    background: #e80b0b;
+  }
+}
+.packet-amount-content {
+  margin-top: 180px;
+  flex-wrap: wrap;
+  .packet-content {
+    font-size: 14px;
+  }
+}
+.packet-amount-msg {
+  color: #cc8b21;
+  flex-wrap: wrap;
+  .packet-amount {
+    font-size: 48px;
+    font-weight: bold;
+  }
+  .packet-amount-text {
+    font-size: 14px;
+  }
+  .gap-style {
+    height: 10px;
+    background: #efefef;
+  }
+}
+.count-wrap {
+  font-size: 14px;
+  //   position: fixed;
+  bottom: 0px;
+}
+.content-container {
+  padding: 10px 15px;
+  margin-top: 55px;
+  font-size: 14px;
+}
+.vote-content {
+  font-size: 16px;
+  padding: 10px 0;
+}
+.people-num-wrap {
+  font-size: 12px;
+  line-height: 30px;
+}
+.list-item {
+  margin-top: 10px;
+}
+.fl-wrap {
+  display: flex;
+  align-items: center;
+}
+.fr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.list-item span {
+  margin-right: 10px;
+}
+.vote-img-wrap {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  overflow: hidden;
+  border-radius: 50%;
+}
+.vote-img-wrap img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.name-wrap {
+  line-height: 20px;
+  width: 100px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.vote-time-wrap {
+  display: block;
+}
+</style>
+<style>
+.dropdown-item-wrap
+  .van-dropdown-item
+  .van-popup
+  .van-cell.van-cell--clickable.van-dropdown-item__option {
+  /*word-break: break-word;*/
+}
+</style>
