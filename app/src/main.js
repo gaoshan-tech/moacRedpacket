@@ -143,8 +143,14 @@ function isConnected() {
       beforeClose,
     })
   }
+  tp.getAppInfo().then(res=>{
+    console.log(res);
+    if(res.result){
+      Vue.prototype.$system=res.data.system
+    }
+})
   tp.getCurrentWallet().then((res) => {
-    if (res.data.blockchain != 'eth') {
+    if (res.data.blockchain != 'moac') {
       Dialog.confirm({
         // title: '提示',
         message: '请切换到moac钱包。',
@@ -152,6 +158,8 @@ function isConnected() {
         confirmButtonText: '确定',
         beforeClose,
       })
+    }else{
+        Vue.prototype.$account = res.data.address
     }
   })
   // Dialog.confirm({

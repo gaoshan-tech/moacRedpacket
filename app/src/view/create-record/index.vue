@@ -27,7 +27,7 @@
             uint256 remainAmount,
             uint256 totalNum -->
           <span class="fl"
-                style="width: 45%;">红包名称</span>
+                style="width: 45%;">红包</span>
           <span class="fl"
                 style="width: 20%;">余额/总额</span>
           <span class="fl"
@@ -54,14 +54,16 @@
             <span class="db font_14"> {{item.totalNumber}}</span>
           </span>
           <span class="fl name-wrap"
-                style="width: 20%;text-align:center;color:dodgerblue;">
+                style="width: 20%;text-align:center;">
 
             <span v-if="item.expired&&(item.remainAmount>0)"
                   class="db font_14 "
                   style="color:dodgerblue;"
                   @click="recyclePacket(item.packetAddr)">回收</span>
-            <span if-else
-                  class="db font_14 "></span>
+            <span v-else-if="!item.expired&&(item.remainAmount>0)"
+                  class="db font_14 ">领取中</span>
+            <span v-else-if="item.remainAmount==0"
+                  class="db font_14 ">已领完</span>
           </span>
         </van-cell>
       </van-list>
@@ -70,6 +72,7 @@
 </template>
 
 <script>
+import { Dialog } from 'vant';
 export default {
   name: "index",
   data () {
@@ -78,8 +81,8 @@ export default {
       finished: false,
       account: "0x0",
       packetList: [],
-      createTotalNumber: 3,
-      currentNum: 3,
+      createTotalNumber: 0,
+      currentNum: 0,
       contract: {
         address: this.$contract_address,
         instance: null
@@ -99,14 +102,53 @@ export default {
      * 收回未领完的过期红包
      */
     async recyclePacket (packetAddr) {
-      //   console.log(packetAddr);
-      //   const { recyclePacket } = this.contract.instance;
-      //   const that = this;
-      //   await recyclePacket(packetAddr).send({ from: address }).on('receipt', function (receipt) {
-      //     console.log('收回未领完的过期红包', receipt);
-      //   }).on('error', function (error) {
-      //     that.$toast(error.message);
-      //   })
+      const that = this;
+      const { recyclePacket } = this.contract.instance;
+      console.log(this.account)
+      const inputData = recyclePacket.getData(packetAddr);
+      console.log(inputData);
+      const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 20000;
+      console.log('gasLimit', gasLimit);
+      console.log('system', this.$system);
+      const query = {
+        from: this.account,
+        to: this.contract.address,
+        gasPrice: this.$system=="ios"?this.getGasPrice():this.$Web3.utils.toHex(this.getGasPrice()),
+        // gasPrice: 1000000000,
+        gasLimit: this.$system=="ios"?gasLimit:this.$Web3.utils.toHex(gasLimit),
+        data: inputData,
+        value: "0x0",
+        chainId: '0x63',
+        via: '0x',
+        shardingFlag: '0x0',
+      };
+      console.log('query', query);
+      // console.log('sendMoacTransaction--');
+      this.$tp.sendMoacTransaction(query).then(res => {
+        console.log('sendMoacTransaction', res);
+        if (res.result) {
+          console.log('sendMoacTransaction', res);
+          const hash = res.data;
+          let receipt = this.$chain3.mc.getTransactionReceipt(hash);
+          if (receipt) {
+            console.log('receipt:', receipt);
+          }
+          this.$toast('操作成功,请等待链上确认！');
+          // this.getPacketDetails();
+        }
+        if (!res.result) {
+          if ("replacement transaction underpriced" == res.data) {
+            this.$toast("其他交易正在确认中，请稍后！");
+            return false;
+          }
+          this.$toast(res.data);
+          return false;
+        }
+      }).catch((error) => {
+        console.log("error");
+        console.log(error);
+      });
+
     },
     //初始化合约
     async initInstance () {
@@ -118,6 +160,15 @@ export default {
     //获取参数
     getUrlQuery () {
       this.account = this.$route.query.account;
+      if (this.account.indexOf("0x") < 0) {
+        console.log(this.account.indexOf("0x"))
+        Dialog.alert({
+          message: '请选择钱包地址',
+        }).then(() => {
+          // on close
+          this.goBack()
+        });
+      }
     },
     //预请求获得创建红包个数
     async perQueryReceiveRecord () {
@@ -136,18 +187,24 @@ export default {
             let packetInfoTmp = that.$Web3.eth.abi.decodeParameters(that.contract.instance.abi[10].outputs, res);
             that.createTotalNumber = packetInfoTmp.totalNum;
             that.currentNum = packetInfoTmp.totalNum;
+            console.log("that.createTotalNumber = " + that.createTotalNumber)
+            console.log("that.currentNum = " + that.currentNum)
+            that.queryReceiveRecord(that.currentNum - 1);
+            return
           }
         }
+        console.log("that.createTotalNumber = 0;")
         that.createTotalNumber = 0;
+        that.finished = true;
       });
     },
     /**
-        * 获取红包领取详情
-        */
+     * 获取红包领取详情
+     */
     async queryReceiveRecord (startIndex) {
       const that = this;
       console.log("queryReceiveRecord-----------")
-      for (let i = startIndex; i >= (startIndex - 1 > 0 ? startIndex - 1 : 0); i--) {
+      for (let i = startIndex; i >= (startIndex - 5 > 0 ? startIndex - 5 : 0); i--) {
         console.log("queryCreatedRecord  " + i)
         that.contract.instance.queryCreatedRecord.call(that.account, i, function (err, res) {
           if (err) {
@@ -174,9 +231,9 @@ export default {
               record.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
               record.startTimeStr = record.startTime.toLocaleDateString() + " " + record.startTime.toTimeString().split(" ")[0].slice(0, 5)
               that.createTotalNumber = packetInfo.totalNum
-            //   console.log(that.createTotalNumber)
+              // that.currentNum = packetInfo.totalNum
+              //   console.log(that.createTotalNumber)
               that.pushList(record);
-
             }
           }
         });
@@ -188,6 +245,11 @@ export default {
       history.go(-1);
       //   this.$router.push({ path: '/homepage', query: { account: this.account } })
     },
+    getGasPrice () {
+      const gasPrice = this.$chain3.mc.gasPrice;
+      return gasPrice.toString();
+      // console.log(gasPrice.toString()); // "10000000000000"
+    },
     //给添加抢记录并排序去重
     pushList (record) {
       this.packetList.push(record);
@@ -198,10 +260,10 @@ export default {
         return item;
       }, []);
       //排序
-      this.packetList.sort((a, b) => { return b.time - a.time });
+      this.packetList.sort((a, b) => { return b.startTime - a.startTime });
       //当前加载位置
       this.currentNum = this.createTotalNumber - this.packetList.length
-      console.log(this.currentNum +"------------")
+      console.log(this.currentNum + "------------")
       // 数据全部加载完成
       if (this.packetList.length >= this.createTotalNumber) {
         this.finished = true;

@@ -25,7 +25,7 @@
     <van-row type="flex"
              justify="center"
              class="mt_20 packet-amount-msg">
-      <van-col class="packet-amount">{{packet.amount|handleAmount|parseNum}}</van-col>
+      <van-col class="packet-amount">{{packet.amount|handleAmount|parseNum}} </van-col>
     </van-row>
     <van-row type="flex"
              justify="center"
@@ -68,7 +68,7 @@
 
           </div>
           <div class="fr list-item fr-wrap">
-            <span class="vote-time-wrap font_14">{{item.amount|handleAmount}}</span>
+            <span class="vote-time-wrap font_14">{{item.amount|handleAmount}} mc</span>
           </div>
         </van-cell>
       </van-list>
@@ -239,7 +239,6 @@ export default {
           if (record.account.toLowerCase() == that.account.toLowerCase()) {
             that.packet.amount = record.amount;
           }
-
           that.pushList(record);
         }
       })

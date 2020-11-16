@@ -1,6 +1,6 @@
 <template>
   <div>
-    <van-row type="flex"
+    <!-- <van-row type="flex"
              justify="center"
              class="mt_30">
       <van-col span="22">
@@ -19,9 +19,9 @@
                              class="dropdown-item-wrap" />
         </van-dropdown-menu>
       </van-col>
-    </van-row>
+    </van-row> -->
     <van-row v-if="packet.status!='error'"
-    type="flex"
+             type="flex"
              justify="center"
              class="packet-amount-content">
       <van-col class="packet-content">{{this.packet.owner | handleStr}}的红包</van-col>
@@ -127,7 +127,8 @@ export default {
   },
   mounted () {
     this.getPacketInfo(this.packet.packetAccount.address);
-    this.perReceiveRedPacket();
+    this.perReceiveRedPacket(this);
+    this.watchReceiveEvent();
     // this.receivePacket();
     // this.queryOwnedRedPacket();
   },
@@ -163,10 +164,10 @@ export default {
       this.packet.packetAccount = this.$Web3.eth.accounts.privateKeyToAccount(this.packet.key)
     },
     //预请求抢红包
-    async perReceiveRedPacket () {
-      Vue.prototype.$account = this.account;
-      let that = this;
-      this.contract.instance.receiveRedPacket.call(this.packet.packetAccount.address, "0x0", { from: this.account }, function (err, res) {
+    async perReceiveRedPacket (that) {
+      // Vue.prototype.$account = this.account;
+      // while (true) {
+      that.contract.instance.receiveRedPacket.call(that.packet.packetAccount.address, "0x0", { from: that.account }, function (err, res) {
         if (err) {
           console.log("err")
           console.log(err)
@@ -179,10 +180,10 @@ export default {
             console.log(resStr)
             if ("packetAddr error" == resStr) {
               that.packet.status = "error"
-              setTimeout(() => {
-                that.getPacketInfo()
-                that.perReceiveRedPacket();
-              }, 3000);
+              that.getPacketInfo(that.packet.packetAccount.address)
+              // setTimeout(() => {
+              //   that.perReceiveRedPacket(that)
+              // }, 3000)
               // that.$toast("红包不存在或未上链")
               // that.$router.push({ path: '/homepage' });
             } else if ("packet over" == resStr) {
@@ -196,8 +197,15 @@ export default {
             }
           }
         }
-      });
 
+      });
+      // if (that.packet.status != "error") {
+      //   return
+      // }
+      // let start = (new Date()).getMilliseconds();
+      // while ((new Date()).getMilliseconds() - start < 3000) {
+      //   continue;
+      // }
       // this.contract.instance.ReceiveRedPacketEvent({ receiveAddr: "0xd3c4372227b81903993767213e5b386567f67e38" }, { fromBlock: 6046381, toBlock: "latest" }, function (err, res) {
       // this.contract.instance.CreateRedPacketEvent({ receiveAddr: "0xd3c4372227b81903993767213e5b386567f67e38" }, { fromBlock: 6046395, toBlock: 6046395 }, function (err, res) {
 
@@ -251,10 +259,9 @@ export default {
      * @returns {Promise<void>}
      */
     async receivePacket () {
-
-      if (this.account == "0x0") {
+      if (this.account == "0x0" || this.account == undefined) {
         Dialog.alert({
-          message: '请选择正确的钱包',
+          message: '请选择正确的钱包地址',
         }).then(() => {
           // on close
         });
@@ -289,9 +296,9 @@ export default {
       const query = {
         from: this.account,
         to: this.contract.address,
-        gasPrice: this.getGasPrice(),
+        gasPrice: this.$system=="ios"?this.getGasPrice():this.$Web3.utils.toHex(this.getGasPrice()),
         // gasPrice: 1000000000,
-        gasLimit: gasLimit,
+        gasLimit: this.$system=="ios"?gasLimit:this.$Web3.utils.toHex(gasLimit),
         data: inputData,
         value: "0x0",
         chainId: '0x63',
@@ -339,7 +346,20 @@ export default {
     async getPacketDetails () {
       this.$router.push({ path: '/packet-details', query: { addr: this.packet.addr, account: this.account } });
     },
-
+    //监控链上创建详情
+    watchReceiveEvent () {
+      let that = this;
+      this.contract.instance.CreateRedPacketEvent({ packetAddr: this.packet.addr }, { fromBlock: "latest", toBlock: "latest" }, function (err, res) {
+        if (err) {
+          //   console.log("err")
+          //   console.log(err)
+        } else {
+          console.log("res");
+          console.log(res);
+          setTimeout(() => { that.getPacketInfo(that.packet.packetAccount.address); that.packet.status = "normal"; }, 3000)
+        }
+      })
+    },
     /**
      * 收回未领完的过期红包
      * @returns {Promise<void>}

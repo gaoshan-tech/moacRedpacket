@@ -18,12 +18,14 @@
                    label="总金额"
                    placeholder="0.00"
                    required
+                   maxlength=10
                    type="number"
                    input-align="right" />
         <van-field v-else
                    v-model="packet.amount"
                    label="单个金额"
                    placeholder="0.00"
+                   maxlength=10
                    required
                    type="number"
                    input-align="right" />
@@ -42,6 +44,7 @@
                    label="红包个数"
                    placeholder="填写个数"
                    required
+                   maxlength=3
                    type="number"
                    :rules="[{ required: true, message: '红包个数最大不能超过100' }]"
                    input-align="right" />
@@ -69,9 +72,9 @@
              class="mt_30">
       <van-col span="22">
         <p v-if="packet.isRandom"
-           class="total-amount">{{packet.amount === '' ? '0.00' :  Number(packet.amount)}}</p>
+           class="total-amount">{{packet.amount === ''||packet.amount === '.' ? '0.00' :  Number(packet.amount)}}</p>
         <p v-else
-           class="total-amount">{{packet.amount === '' ? '0.00' : Number(packet.amount) * Number(packet.total)}}</p>
+           class="total-amount">{{packet.amount === ''||packet.amount === '.' ? '0.00' : Number(packet.amount) * Number(packet.total)}}</p>
       </van-col>
     </van-row>
 
@@ -98,7 +101,7 @@
              justify="center"
              class="des-text-style recycle-text">
       <van-col span="22">
-        未领取的红包，可在24小时后主动收回。
+        未领取的红包，可在24小时后收回。
       </van-col>
     </van-row>
   </div>
@@ -232,7 +235,7 @@ export default {
         return false;
       }
       let totalValue = this.packet.isRandom ? Number(this.packet.amount) : Number(this.packet.amount) * Number(this.packet.total);
-      if (this.packet.amount === '' || totalValue / Number(this.packet.total) < 0.01) {
+      if (this.packet.amount === '' || this.packet.amount === '.' || totalValue / Number(this.packet.total) < 0.01) {
         this.$toast('单个红包的金额至少0.01moac');
         return false;
       }
@@ -251,18 +254,16 @@ export default {
       console.log(inputData);
       console.log(this.packet.owner);
       const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 260000;
-      // console.log('inputData', inputData);
       console.log('gasLimit', gasLimit);
-      // console.log(this.$chain3.intToHex(1000000000))
-      // console.log(this.getGasPrice())
+      console.log('system', this.$system);
       const query = {
         from: this.packet.owner,
         to: this.contract.address,
-        gasPrice: this.getGasPrice(),
+        gasPrice: this.$system == "ios" ? this.getGasPrice() : this.$Web3.utils.toHex(this.getGasPrice()),
         // gasPrice: 1000000000,
-        gasLimit: gasLimit,
+        gasLimit: this.$system == "ios" ? gasLimit : this.$Web3.utils.toHex(gasLimit),
         data: inputData,
-        value: this.$chain3.toSha(totalValue, "mc"),
+        value: this.$system == "ios" ? this.$chain3.toSha(totalValue, "mc") : this.$Web3.utils.toHex(this.$chain3.toSha(totalValue, "mc")),
         chainId: '0x63',
         via: '0x',
         shardingFlag: '0x0',
@@ -279,8 +280,8 @@ export default {
             console.log('receipt:', receipt);
           }
           const qrCodeMsg = this.packet.redPacketAccount.privateKey;
-          this.$toast('操作成功')
-          this.$router.push({ path: '/create-success', query: { key: qrCodeMsg } });
+          // this.$toast('操作成功')
+          this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
         }
         if (!res.result) {
           if ("replacement transaction underpriced" == res.data) {
@@ -291,70 +292,61 @@ export default {
           return false;
         }
       }).catch((error) => {
-        console.log("error");
         console.log(error);
       });
-      this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
-      // let receipt = this.$chain3.mc.getTransactionReceipt("0x4945cef6871d2da90ca37e9fc5b93db1364be444a779b24c0a5106adfb0a9e1b");
-      // if (receipt) {
-      //   console.log('receipt:', receipt);
-      // }
-
+      // this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
     },
     typeChange (type) {
       type === 1 ? this.packet.isRandom = true : this.packet.isRandom = false;
+    },
+    getGasPrice () {
+      const gasPrice = this.$chain3.mc.gasPrice;
+      console.log("gasPrice.toString():" + gasPrice.toString())
+      return gasPrice.toString();
     },
     //初始化钱包地址和红包公私钥
     create_key () {
       let account = this.$route.query.account;
       console.log("create_key" + account)
-
-      // if (account == null || account == undefined || account == '' || account == 0) {
-      //   this.$router.push({ path: '/homepage' });
-      // }
       this.packet.owner = account;
 
     },
-    getGasPrice () {
-      const gasPrice = this.$chain3.mc.gasPrice;
-      return gasPrice.toString();
-      // console.log(gasPrice.toString()); // "10000000000000"
-    },
-    //创建合约
-    createdRedPacket2 () {
-      const inputData = ""
-      const gasLimit = this.$chain3.mc.estimateGas({ from: this.contract.account, data: inputData }) + 2100;
-      // console.log('inputData', inputData);
-      console.log('gasLimit', gasLimit);
-      console.log(this.$chain3.intToHex(1000000000))
-      console.log(this.getGasPrice())
-      const query = {
-        from: this.packet.account,
-        to: this.moacData.toAddress,
-        gasPrice: '0x' + this.getGasPrice(),
-        // gasPrice: 1000000000,
 
-        gasLimit: gasLimit,
-        data: inputData,
-        value: '0x0',
-        chainId: '0x63',
-        via: '0x',
-        shardingFlag: '0x0',
-      };
-      console.log('query', query);
-      this.$tp.sendMoacTransaction(query).then(res => {
-        if (res) {
-          // console.log('sendMoacTransaction', res);
-          const hash = res.data;
-          // this.voteData.hash = hash;
-          console.log('hash', hash);
-          if (!res.result) {
-            this.$toast('上链失败，请检查余额');
-            return false;
-          }
-        }
-      })
-    }
+    //创建合约
+    // createdRedPacket2 () {
+    //   const inputData = ""
+    //   const gasLimit = this.$chain3.mc.estimateGas({ from: this.contract.account, data: inputData }) + 2100;
+    //   // console.log('inputData', inputData);
+    //   console.log('gasLimit', gasLimit);
+    //   console.log(this.$chain3.intToHex(1000000000))
+    //   console.log(this.getGasPrice())
+    //   const query = {
+    //     from: this.packet.account,
+    //     to: this.moacData.toAddress,
+    //     gasPrice: '0x' + this.getGasPrice(),
+    //     // gasPrice: 1000000000,
+
+    //     gasLimit: gasLimit,
+    //     data: inputData,
+    //     value: '0x0',
+    //     chainId: '0x63',
+    //     via: '0x',
+    //     shardingFlag: '0x0',
+    //   };
+    //   console.log('query', query);
+    //   this.$tp.sendMoacTransaction(query).then(res => {
+    //     if (res) {
+    //       // console.log('sendMoacTransaction', res);
+    //       const hash = res.data;
+    //       // this.voteData.hash = hash;
+    //       console.log('hash', hash);
+    //       if (!res.result) {
+    //         this.$toast('上链失败，请检查余额');
+    //         return false;
+    //       }
+    //     }
+    //   })
+    // }
   }
 }
 </script>

@@ -69,56 +69,7 @@ const routes = [
       title: '红包领取记录'
     }
   },
-  {
-    name: 'vote-list',
-    component: () => import('./view/vote-list'),
-    meta: {
-      title: '投票列表'
-    }
-  },
-  {
-    name: 'build-vote',
-    component: () => import('./view/build-votes'),
-    meta: {
-      title: '发布投票'
-    }
-  },
-  {
-    name: 'vote-details',
-    component: () => import('./view/vote-details'),
-    meta: {
-      title: '投票详情'
-    }
-  },
-    {
-        name: 'vote-details-finished',
-        component: () => import('./view/vote-details-finished'),
-        meta: {
-            title: '投票详情(投票后的状态页面)'
-        }
-    },
 
-  {
-    name: 'vote-people-list',
-    component: () => import('./view/vote-people-list'),
-    meta: {
-      title: '查看投票人'
-    }
-  },
-  {
-    name: 'single-vote-people-list',
-    component: () => import('./view/single-vote-people-list'),
-    meta: {
-      title: '查看单项投票人'
-    }
-  },
-  {
-    name: 'test',
-    component: () => import('./view/test'),
-    meta: {
-      title: 'test'
-    }
-  }
 ];
 
 // add route path

@@ -6,7 +6,7 @@
         <van-nav-bar title="首页" />
  </van-col>
     </van-row> -->
-    <van-row type="flex"
+    <!-- <van-row type="flex"
              justify="center"
              class="mt_30">
       <van-col span="22">
@@ -25,7 +25,7 @@
                              class="dropdown-item-wrap" />
         </van-dropdown-menu>
       </van-col>
-    </van-row>
+    </van-row> -->
     <van-divider />
     <van-row type="flex"
              class="mt_30"
