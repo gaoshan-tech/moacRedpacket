@@ -40,10 +40,10 @@
       <!-- <p class="mt_20">截图保存</p> -->
     </div>
     <div class="btns">
-      <p>
+      <!-- <p>
         <van-button type="info"
                     @click="scanBtn">扫一扫</van-button>
-      </p>
+      </p> -->
       <p class="mt_20"
          v-if="isShow">
         <van-button type="info"
@@ -127,6 +127,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  overflow:hidden;
   p {
     margin-top: 10px;
     font-size: 14px;

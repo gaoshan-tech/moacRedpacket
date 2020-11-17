@@ -27,35 +27,36 @@
             uint256 remainAmount,
             uint256 totalNum -->
           <span class="fl"
-                style="width: 45%;">红包</span>
+                style="width: 45%;">时间</span>
           <span class="fl"
-                style="width: 20%;">余额/总额</span>
+                style="width: 20%;">总额</span>
           <span class="fl"
-                style="width: 20%;">余数/总数</span>
+                style="width: 20%;">总数</span>
           <span class="fl"
                 style="width: 15%;">状态</span>
         </van-cell>
         <van-cell v-for="item in packetList"
                   :key="item.index">
           <!-- <span class="fl font_14" style="width: 25%;">{{item.isRandom ? '随机红包' : '普通红包'}}</span> -->
-          <span class="fl name-wrap"
-                style="width: 45%;">
-            <span class="db font_14">{{item.description}}</span>
-            <span class="db font_12 color_666">{{item.startTimeStr}}</span>
-          </span>
-          <span class="fl name-wrap"
-                style="width: 20%;">
-            <span class="db font_14">{{item.remainAmount|handleAmount}}</span>
-            <span class="db font_14">{{item.totalAmount|handleAmount}}</span>
-          </span>
-          <span class="fl name-wrap"
-                style="width: 15%;text-align:right">
-            <span class="db font_14">{{item.remainNumber}}</span>
-            <span class="db font_14"> {{item.totalNumber}}</span>
+          <span @click="getPacketDetails(item.packetAddr)">
+            <span class="fl name-wrap"
+                  style="width: 45%;">
+              <!-- <span class="db font_14">{{item.description}}</span> -->
+              <span class="db font_14 ">{{item.startTimeStr}}</span>
+            </span>
+            <span class="fl name-wrap"
+                  style="width: 20%;">
+              <!-- <span class="db font_14">{{item.remainAmount|handleAmount}}</span> -->
+              <span class="db font_14">{{item.totalAmount|handleAmount}}</span>
+            </span>
+            <span class="fl name-wrap"
+                  style="width: 15%;text-align:center">
+              <!-- <span class="db font_14">{{item.remainNumber}}</span> -->
+              <span class="db font_14"> {{item.totalNumber}}</span>
+            </span>
           </span>
           <span class="fl name-wrap"
                 style="width: 20%;text-align:center;">
-
             <span v-if="item.expired&&(item.remainAmount>0)"
                   class="db font_14 "
                   style="color:dodgerblue;"
@@ -65,6 +66,7 @@
             <span v-else-if="item.remainAmount==0"
                   class="db font_14 ">已领完</span>
           </span>
+
         </van-cell>
       </van-list>
     </van-row>
@@ -113,9 +115,9 @@ export default {
       const query = {
         from: this.account,
         to: this.contract.address,
-        gasPrice: this.$system=="ios"?this.getGasPrice():this.$Web3.utils.toHex(this.getGasPrice()),
+        gasPrice: this.$system == "ios" ? this.getGasPrice() : this.$Web3.utils.toHex(this.getGasPrice()),
         // gasPrice: 1000000000,
-        gasLimit: this.$system=="ios"?gasLimit:this.$Web3.utils.toHex(gasLimit),
+        gasLimit: this.$system == "ios" ? gasLimit : this.$Web3.utils.toHex(gasLimit),
         data: inputData,
         value: "0x0",
         chainId: '0x63',
@@ -204,7 +206,7 @@ export default {
     async queryReceiveRecord (startIndex) {
       const that = this;
       console.log("queryReceiveRecord-----------")
-      for (let i = startIndex; i >= (startIndex - 5 > 0 ? startIndex - 5 : 0); i--) {
+      for (let i = startIndex; i >= (startIndex - 10 > 0 ? startIndex - 10 : 0); i--) {
         console.log("queryCreatedRecord  " + i)
         that.contract.instance.queryCreatedRecord.call(that.account, i, function (err, res) {
           if (err) {
@@ -240,6 +242,13 @@ export default {
       }
       // 加载状态结束
       this.loading = false;
+    },
+    /**
+     * 查看红包领取详情
+    * @returns {Promise<void>}
+    */
+    async getPacketDetails (addr) {
+      this.$router.push({ path: '/packet-details', query: { addr: addr, account: this.account } });
     },
     goBack () {
       history.go(-1);
@@ -283,7 +292,7 @@ export default {
       }
     },
     handleAmount (amount) {
-      return Number(amount).toFixed(6);
+      return Number(amount).toFixed(3);
     },
     parseNum (amount) {
       return parseFloat(amount);

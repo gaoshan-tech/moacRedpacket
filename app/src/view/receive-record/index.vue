@@ -18,7 +18,7 @@
                 class="van-list-container">
         <van-cell>
           <span class="fl"
-                style="width: 45%;">红包</span>
+                style="width: 45%;">红包备注</span>
           <span class="fl"
                 style="width: 20%;">金额</span>
           <span class="fl"
