@@ -19,7 +19,8 @@ module.exports = {
   },
   devServer: {
     port: 8081, // 端口号
-    host: '192.168.100.125',
+    // host: '192.168.100.125',
+    host: '192.168.1.100',
     https: false, // https:{type:Boolean}
     open: true, //配置自动启动浏览器
     // proxy: 'http://localhost:4000' // 配置跨域处理,只有一个代理

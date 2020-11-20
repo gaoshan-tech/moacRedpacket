@@ -3,9 +3,8 @@
     <van-row type="flex"
              justify="center">
       <van-col span="24">
-        <van-nav-bar title="发送详情"
-                     left-text="返回"
-                     @click-left="goBack" />
+        <van-nav-bar title="发送记录"
+                   />
       </van-col>
     </van-row>
     <van-row type="flex"
@@ -27,13 +26,13 @@
             uint256 remainAmount,
             uint256 totalNum -->
           <span class="fl"
-                style="width: 45%;">时间</span>
+                style="width: 45%;">发送时间</span>
           <span class="fl"
                 style="width: 20%;">总额</span>
           <span class="fl"
                 style="width: 20%;">总数</span>
-          <span class="fl"
-                style="width: 15%;">状态</span>
+          <span class="fr"
+                style="width: 15%;text-align:right;">状态</span>
         </van-cell>
         <van-cell v-for="item in packetList"
                   :key="item.index">
@@ -50,17 +49,17 @@
               <span class="db font_14">{{item.totalAmount|handleAmount}}</span>
             </span>
             <span class="fl name-wrap"
-                  style="width: 15%;text-align:center">
+                  style="width: 15%;">
               <!-- <span class="db font_14">{{item.remainNumber}}</span> -->
               <span class="db font_14"> {{item.totalNumber}}</span>
             </span>
           </span>
-          <span class="fl name-wrap"
-                style="width: 20%;text-align:center;">
+          <span class="fr name-wrap"
+                style="width: 20%;text-align:right;">
             <span v-if="item.expired&&(item.remainAmount>0)"
                   class="db font_14 "
                   style="color:dodgerblue;"
-                  @click="recyclePacket(item.packetAddr)">回收</span>
+                  @click="recyclePacket(item.packetAddr)">待回收</span>
             <span v-else-if="!item.expired&&(item.remainAmount>0)"
                   class="db font_14 ">领取中</span>
             <span v-else-if="item.remainAmount==0"
@@ -75,6 +74,7 @@
 
 <script>
 import { Dialog } from 'vant';
+import { debounceHign } from '@/utils/request-limit'
 export default {
   name: "index",
   data () {
@@ -103,7 +103,7 @@ export default {
     /**
      * 收回未领完的过期红包
      */
-    async recyclePacket (packetAddr) {
+     recyclePacket :debounceHign( function(packetAddr)  {
       const that = this;
       const { recyclePacket } = this.contract.instance;
       console.log(this.account)
@@ -151,7 +151,7 @@ export default {
         console.log(error);
       });
 
-    },
+    },2000),
     //初始化合约
     async initInstance () {
       this.contract.instance = this.$chain3.mc.contract(

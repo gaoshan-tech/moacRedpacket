@@ -45,6 +45,7 @@ import {
   Dialog,
   Tabbar,
   TabbarItem,
+  Loading,
 } from 'vant'
 
 import axios from 'axios'
@@ -80,6 +81,7 @@ Vue.use(Divider)
 Vue.use(Dialog)
 Vue.use(Tabbar)
 Vue.use(TabbarItem)
+Vue.use(Loading);
 
 // 引入tp-js-sdk
 const tp = require('tp-js-sdk')

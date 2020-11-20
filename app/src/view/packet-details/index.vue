@@ -31,7 +31,10 @@
              justify="center"
              class="packet-amount-msg">
       <van-col v-if="packet.amount==0&&packet.remainNumber!=0"
-               class="packet-amount-text">链上查询中...</van-col>
+               class="packet-amount-text">
+        <van-loading>链上查询中....</van-loading>
+      </van-col>
+
       <van-col v-else
                class="packet-amount-text">已存入钱包</van-col>
       <!-- <van-col :span="24" class="packet-amount-text" style="text-align: center" @click="recyclePacket">收回过期红包</van-col> -->
@@ -48,7 +51,7 @@
       <van-list :span="24"
                 class="van-list-container">
         <van-cell>
-          <span class="fl">已领取 {{this.packet.totalNumber - this.packet.remainNumber}} / {{packet.totalNumber}}</span>
+          <span class="fl">已领取 {{this.packet.totalNumber - this.packet.remainNumber}} / {{packet.totalNumber}}个，共{{(this.packet.totalAmount - this.packet.remainAmount)|handleAmount2}}/{{this.packet.totalAmount|handleAmount2}}moac</span>
           <!-- <span class="fr"
                 style="color:dodgerblue;"
                 @click="getPersonalPacket">我的红包记录</span> -->
@@ -68,7 +71,7 @@
 
           </div>
           <div class="fr list-item fr-wrap">
-            <span class="vote-time-wrap font_14">{{item.amount|handleAmount}} mc</span>
+            <span class="vote-time-wrap font_14">{{item.amount|handleAmount}} moac</span>
           </div>
         </van-cell>
       </van-list>
@@ -153,11 +156,11 @@ export default {
             that.packet.description = packetInfo.description;
             that.packet.isRandom = packetInfo.isRandom;
             that.packet.owner = packetInfo.owner;
-            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString()),
-              that.packet.remainNumber = packetInfo.remainNumber;
+            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString(10)),
+            that.packet.remainNumber = packetInfo.remainNumber;
             that.packet.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
             // (new Date()).getTime() / 1000 - packetInfo.startTime > 24 * 3600;
-            that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString());
+            that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString(10));
             that.packet.totalNumber = packetInfo.totalNumber;
             console.log(that.packet);
             that.queryReceiveDetails();
@@ -294,6 +297,9 @@ export default {
     handleAmount (amount) {
       return Number(amount).toFixed(6);
     },
+    handleAmount2 (amount) {
+      return Number(amount).toFixed(2);
+    },
     parseNum (amount) {
       return parseFloat(amount);
     }
@@ -327,7 +333,7 @@ export default {
     width: 107%;
     height: 200px;
     border-radius: 0 0 220px 220px;
-    background: #e80b0b;
+    background: #e80b0bbe;
   }
 }
 .packet-amount-content {
@@ -401,7 +407,7 @@ export default {
 }
 .name-wrap {
   line-height: 20px;
-  width: 115px;
+  width: 130px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

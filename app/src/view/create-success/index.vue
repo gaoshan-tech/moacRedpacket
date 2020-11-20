@@ -5,49 +5,58 @@
       <div class="_top"
            id="qrCode"
            ref="qrCodeDiv"></div>
+      <!-- <div class="box">
+        <img :src="imgsrc"
+             alt="">
+      </div> -->
       <div class="packet"
-           ref="title">墨客红包</div>
+           ref="title">{{ow|handleStr}}的红包</div>
+                 <div class="dc"
+           ref="dc">{{dc|handleStr}}</div>
       <div class="tp"
            ref="tp">请使用TP钱包扫描领取</div>
-      <div class="_bottom"
-           ref="bottom">
-        <svg t="1604565796713"
+      <!-- <div class="_bottom"
+           ref="bottom"> -->
+      <!-- fill="#E83828" -->
+      <!-- fill="#C30D23" -->
+      <!-- fill="#EBC14C" -->
+      <!-- <svg t="1604565796713"
              class="icon"
              viewBox="0 0 1024 1024"
              version="1.1"
              xmlns="http://www.w3.org/2000/svg"
              p-id="2434"
              width="500"
-             height="500">
-          <path d="M183.912765 45.978191h650.262989v932.700449H183.912765z"
-                fill="#E83828"
+             height="500"> -->
+      <!-- <path d="M183.912765 45.978191h650.262989v932.700449H183.912765z"
+                fill="#fff"
                 p-id="2435"
                 data-spm-anchor-id="a313x.7781069.0.i2"
                 class=""></path>
           <path d="M186.54009 45.978191h651.576652L512.328416 534.003849z"
-                fill="#C30D23"
+                fill="#fff"
                 p-id="2436"
                 data-spm-anchor-id="a313x.7781069.0.i1"
-                class="selected"></path>
-          <path d="M512.328416 507.730597m-191.137909 0a191.137909 191.137909 0 1 0 382.275818 0 191.137909 191.137909 0 1 0-382.275818 0Z"
+                class="selected"></path> -->
+      <!-- <path d="M512.328416 507.730597m-191.137909 0a191.137909 191.137909 0 1 0 382.275818 0 191.137909 191.137909 0 1 0-382.275818 0Z"
                 fill="#EBC14C"
                 p-id="2437"
                 data-spm-anchor-id="a313x.7781069.0.i0"
-                class="selected"></path>
-        </svg>
-      </div>
-      <!--<img src="" alt="">-->
+                class="selected"></path> -->
+      <!-- </svg> -->
+      <!-- </div> -->
+
       <!-- <p class="mt_20">截图保存</p> -->
     </div>
     <div class="btns">
-      <!-- <p>
+      <p>
         <van-button type="info"
-                    @click="scanBtn">扫一扫</van-button>
-      </p> -->
+                    @click="scanBtn">点击领取红包</van-button>
+      </p>
       <p class="mt_20"
          v-if="isShow">
         <van-button type="info"
-                    @click="screenShot">点击保存红包截图</van-button>
+                    @click="screenShot">保存红包到相册</van-button>
       </p>
 
     </div>
@@ -63,8 +72,11 @@ export default {
     return {
       qrCode: {
         key: "0x0",
-        packetAddr: ""
+        packetAddr: "",
       },
+      dc: "0x",
+      ow: "0x",
+      imgsrc: '',
       isShow: true
     }
   },
@@ -77,20 +89,30 @@ export default {
   methods: {
     getUrlParams () {
       this.qrCode.key = this.$route.query.key;
+      this.dc = this.$route.query.dc;
+      this.ow = this.$route.query.ow;
       console.log('key', this.qrCode.key);
     },
     initQRCodeView () {
       new QRCode(this.$refs.qrCodeDiv, {
         // text: 'http://192.168.100.125:8081/#/get-packet?key=' + this.qrCode.key,
         text: 'http://47.92.110.121/redPacket/#/get-packet?key=' + this.qrCode.key,
-        width: 120,
-        height: 120,
-        colorDark: "#333333", //二维码颜色
+        width: 230,
+        height: 230,
+        // colorDark: "#E83828", //二维码颜色
+        colorDark: "#333", //二维码颜色
         colorLight: "#ffffff", //二维码背景色
         correctLevel: QRCode.CorrectLevel.L//容错率，L/M/H
       })
+      // this.$nextTick(() => {
+      //   let qrCodedom = document.getElementById('qrCode')
+      //   let img = qrCodedom.getElementsByTagName('img')[0]
+      //   setTimeout(() => {
+      //     this.imgsrc = img.src
+      //   }, 1000)
+      // })
       this.$refs.qrCodeDiv.style.top = '50%'
-      this.$refs.qrCodeDiv.style.marginTop = '-130px'
+      this.$refs.qrCodeDiv.style.marginTop = - (this.$refs.qrCodeDiv.offsetHeight / 2) + 'px'
       this.$refs.title.style.top = this.$refs.bottom.offsetTop + 88 + 'px'
       this.$refs.tp.style.top = this.$refs.bottom.offsetTop + this.$refs.bottom.offsetHeight - 105 + 'px'
 
@@ -105,7 +127,7 @@ export default {
       html2canvas(this.$refs.imgref, {
         // width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
         // height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-        backgroundColor: null,//画出来的图片有白色的边框,不要可设置背景为透明色（null）
+        // backgroundColor: null,//画出来的图片有白色的边框,不要可设置背景为透明色（null）
         useCORS: true,//支持图片跨域
         scale: 1,//设置放大的倍数
       }).then((canvas) => {// 第一个参数是需要生成截图的元素,第二个是自己需要配置的参数,宽高等
@@ -116,22 +138,56 @@ export default {
       })
 
     }
+  },
+  filters: {
+    handleStr (str) {
+      if (str.length > 12) {
+        const str1 = str.substring(0, 8);
+        const str2 = str.substr(str.length - 4, 4);
+        const _subStr = str1 + '...' + str2;
+        return _subStr.toLowerCase();
+      } else {
+        return str;
+      }
+    },
+    handleAmount (amount) {
+      return Number(amount).toFixed(6);
+    },
+    handleAmount2 (amount) {
+      return Number(amount).toFixed(2);
+    },
+    parseNum (amount) {
+      return parseFloat(amount);
+    }
   }
 }
 </script>
 
-<style scoped lang="less">
+<style lang="less">
 .success-container {
   height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow:hidden;
+  overflow: hidden;
+  position: relative;
   p {
     margin-top: 10px;
     font-size: 14px;
     color: #666;
+  }
+}
+.box {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  img {
+    width: 100%;
+    height: 100%;
   }
 }
 ._top {
@@ -139,6 +195,10 @@ export default {
   z-index: 99;
   margin-top: 10px;
   top: 225px;
+  background-size: cover;
+  img {
+    display: block;
+  }
 }
 ._bottpm {
   position: absolute;
@@ -155,6 +215,7 @@ export default {
   }
 }
 .tp {
+  color: #ebc14c;
   position: absolute;
   z-index: 99;
   top: 450px;
@@ -162,10 +223,21 @@ export default {
   font-size: 20px;
 }
 .packet {
+  color: #ebc14c;
   position: absolute;
   z-index: 99;
-  top: 120px;
-  left: 150px;
+  // top: 120px;
+  top: 40px;
+  justify-content: center;
+  font-size: 20px;
+}
+.dc{
+  color: #ebc14c;
+  position: absolute;
+  z-index: 99;
+  // top: 120px;
+  top: 70px;
+  justify-content: center;
   font-size: 20px;
 }
 </style>

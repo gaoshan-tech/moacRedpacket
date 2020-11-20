@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="wallet">
     <!-- <van-row type="flex"
              justify="center"
              class="mt_30">
@@ -20,72 +20,82 @@
         </van-dropdown-menu>
       </van-col>
     </van-row> -->
-    <van-row v-if="packet.status!='error'"
-             type="flex"
-             justify="center"
-             class="packet-amount-content">
-      <van-col class="packet-content">{{this.packet.owner | handleStr}}的红包</van-col>
-      <!--<van-col class="packet-content">{{msg.amount}}</van-col>-->
-    </van-row>
-
-    <van-row type="flex"
-             justify="center"
-             class="mt_20 packet-amount-msg">
-      <van-col class="packet-amount">{{this.packet.description}}</van-col>
-    </van-row>
-
-    <van-row v-if="packet.status=='expired'"
-             type="flex"
-             justify="center"
-             class="mt_40 packet-amount-msg">
-      <van-col class="packet-amount-text">红包已过期</van-col>
-    </van-row>
-    <van-row v-else-if="packet.status=='error'"
-             type="flex"
-             justify="center"
-             class="mt_40 packet-amount-msg">
-      <van-col class="packet-amount-text">链上查询中...</van-col>
-    </van-row>
-    <van-row v-else-if="packet.status=='over'"
-             type="flex"
-             justify="center"
-             class="mt_40 packet-amount-msg">
-      <van-col class="packet-amount-text">红包已抢完</van-col>
-    </van-row>
-    <van-row v-else-if="packet.status=='received'"
-             type="flex"
-             justify="center"
-             class="mt_40 packet-amount-msg">
-      <van-col class="packet-amount-text">红包已领取</van-col>
-    </van-row>
-    <van-row v-else
-             type="flex"
-             justify="center"
-             class="packet-amount-msg"
-             @click="receivePacket">
-      <van-col span="22"
-               class="container packet-image"></van-col>
-      <van-col span="22"
-               style="text-align: center"
-               class="packet-get-text">
-        开
-      </van-col>
-    </van-row>
-    <van-row v-if="packet.status!='error'"
-             type="flex"
-             justify="center"
-             class="packet-amount-msg"
-             @click="getPacketDetails">
-      <van-col :span="24"
-               class="mt_40 packet-details-text"
+    <div class="content">
+      <van-row v-if="packet.status!='error'"
+               type="flex"
                justify="center"
-               style="text-align: center">查看详情</van-col>
-    </van-row>
+               class="packet-amount-content">
+        <van-col class="packet-content">{{this.packet.owner | handleStr}}的红包</van-col>
+        <!--<van-col class="packet-content">{{msg.amount}}</van-col>-->
+      </van-row>
+      <van-row type="flex"
+               justify="center"
+               class="mt_20 packet-amount-msg">
+        <van-col class="packet-amount">{{this.packet.description}}</van-col>
+      </van-row>
+      <van-row v-if="packet.status=='expired'"
+               type="flex"
+               justify="center"
+               class="mt_100 packet-amount-msg">
+        <van-col class="packet-amount-text">红包已过期</van-col>
+      </van-row>
+      <van-row v-else-if="packet.status=='error'"
+               type="flex"
+               justify="center"
+               class="mt_40 packet-amount-msg packet-query-text">
+        <!-- <van-col class="packet-amount-text">链上查询中...</van-col> -->
+        <van-loading class="packet-query-text"
+                     color="#fff">链上查询中....</van-loading>
+      </van-row>
+      <van-row v-else-if="packet.status=='over'"
+               type="flex"
+               justify="center"
+               class="mt_40 packet-amount-msg">
+        <van-col class="packet-amount-text">红包已抢完</van-col>
+      </van-row>
+      <van-row v-else-if="packet.status=='received'"
+               type="flex"
+               justify="center"
+               class="mt_40 packet-amount-msg">
+        <van-col class="packet-amount-text">红包已领取</van-col>
+
+      </van-row>
+      <van-row v-else-if="packet.status=='normal'"
+               type="flex"
+               justify="center"
+               class="packet-amount-msg"
+               @click="receivePacket">
+        <van-col span="22"
+                 class="container packet-image"></van-col>
+        <van-col span="22"
+                 style="text-align: center"
+                 class="packet-get-text">
+          开
+        </van-col>
+      </van-row>
+      <van-row v-else
+               type="flex"
+               justify="center"
+               class="mt_40 packet-amount-msg">
+        <van-col class="packet-amount-text">查询领取情况中...</van-col>
+      </van-row>
+      <van-row v-if="packet.status!='error'"
+               type="flex"
+               justify="center"
+               class="packet-amount-msg"
+               @click="getPacketDetails">
+        <van-col :span="24"
+                 class="mt_40 packet-details-text"
+                 justify="center"
+                 style="text-align: center">查看详情</van-col>
+      </van-row>
+    </div>
   </div>
 </template>
 
 <script>
 import { DropdownMenu, DropdownItem, NavBar, Dialog } from 'vant';
+import { debounceHign } from '@/utils/request-limit'
 import Vue from 'vue';
 export default {
   name: "index",
@@ -112,7 +122,7 @@ export default {
         startTime: 0,
         totalAmount: 0,
         totalNumber: 0,
-        status: 'normal'
+        status: 'error'
       },
       contract: {
         address: this.$contract_address,
@@ -123,7 +133,7 @@ export default {
   created () {
     this.initInstance();
     this.getkey();
-    this.getWalletAddress();
+    // this.getWalletAddress();
   },
   mounted () {
     this.getPacketInfo(this.packet.packetAccount.address);
@@ -167,7 +177,10 @@ export default {
     async perReceiveRedPacket (that) {
       // Vue.prototype.$account = this.account;
       // while (true) {
-      that.contract.instance.receiveRedPacket.call(that.packet.packetAccount.address, "0x0", { from: that.account }, function (err, res) {
+      console.log("perReceiveRedPacket")
+      that.contract.instance.receiveRedPacket.call(that.packet.packetAccount.address, "0x226ec1f7c89b13b9c8c8cdcf7dca1b5d0d7b8f944411328c9618f73a7a95f378730cdc716d99cde36f6a5217e098b2074cc90445d1cc4e22a06cc9b7eb843c751b", { from: that.account }, function (err, res) {
+      // that.contract.instance.receiveRedPacket.call(that.packet.packetAccount.address, "0x226ec1f7c89b13b9c8c8cdcf7dca1b5d0d7b8f944411328c9618f73a7a95f378730cdc716d99cde36f6a5217e098b2074cc90445d1cc4e22a06cc9b7eb843c751b", { from: "0xd3c4372227b81903993767213e5b386567f67e38" }, function (err, res) {
+      // that.contract.instance.receiveRedPacket.call(that.packet.packetAccount.address, "0x0", { from: "0xd3c4372227b81903993767213e5b386567f67e38" }, function (err, res) {
         if (err) {
           console.log("err")
           console.log(err)
@@ -177,6 +190,7 @@ export default {
           let strSlice = "0x" + str.slice(10);
           if (str.indexOf("0x08c379a0") == 0) {
             let resStr = that.$Web3.eth.abi.decodeParameter("string", strSlice)
+            console.log("resStr")
             console.log(resStr)
             if ("packetAddr error" == resStr) {
               that.packet.status = "error"
@@ -194,8 +208,16 @@ export default {
               that.packet.status = "received"
               // that.$toast("已领取")
               // that.$router.push({ path: '/packet-details' });
+            } else {
+              that.packet.status = "normal"
             }
-          }
+          } 
+          // else {
+          //   if (str.length > 10) {
+          //     that.packet.status = "normal"
+          //   }
+          // }
+
         }
 
       });
@@ -217,6 +239,7 @@ export default {
       //     console.log(res);
       //   }
       // })
+
     },
 
     //获取红包基本信息
@@ -241,12 +264,13 @@ export default {
             that.packet.description = packetInfo.description;
             that.packet.isRandom = packetInfo.isRandom;
             that.packet.owner = packetInfo.owner;
-            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString()),
+            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString(10)),
               that.packet.remainNumber = packetInfo.remainNumber;
             that.packet.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
             // (new Date()).getTime() / 1000 - packetInfo.startTime > 24 * 3600;
-            that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString());
+            that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString(10));
             that.packet.totalNumber = packetInfo.totalNumber;
+            // that.packet.status = "normol";
             console.log(that.packet);
             return
           }
@@ -258,10 +282,10 @@ export default {
      * 领取红包
      * @returns {Promise<void>}
      */
-    async receivePacket () {
+     receivePacket:debounceHign(function() {
       if (this.account == "0x0" || this.account == undefined) {
         Dialog.alert({
-          message: '请选择正确的钱包地址',
+          message: '请使用moac钱包地址',
         }).then(() => {
           // on close
         });
@@ -296,9 +320,9 @@ export default {
       const query = {
         from: this.account,
         to: this.contract.address,
-        gasPrice: this.$system=="ios"?this.getGasPrice():this.$Web3.utils.toHex(this.getGasPrice()),
+        gasPrice: this.$system == "ios" ? this.getGasPrice() : this.$Web3.utils.toHex(this.getGasPrice()),
         // gasPrice: 1000000000,
-        gasLimit: this.$system=="ios"?gasLimit:this.$Web3.utils.toHex(gasLimit),
+        gasLimit: this.$system == "ios" ? gasLimit : this.$Web3.utils.toHex(gasLimit),
         data: inputData,
         value: "0x0",
         chainId: '0x63',
@@ -333,7 +357,7 @@ export default {
       });
 
 
-    },
+    },2000),
     getGasPrice () {
       const gasPrice = this.$chain3.mc.gasPrice;
       return gasPrice.toString();
@@ -356,7 +380,7 @@ export default {
         } else {
           console.log("res");
           console.log(res);
-          setTimeout(() => { that.getPacketInfo(that.packet.packetAccount.address); that.packet.status = "normal"; }, 3000)
+          setTimeout(() => { that.getPacketInfo(that.packet.packetAccount.address); that.perReceiveRedPacket(that); }, 3000)
         }
       })
     },
@@ -395,11 +419,25 @@ export default {
   text-align: left;
   /*text-indent: 10px;*/
 }
+.wallet {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .content {
+    background: #e80b0bbe;
+    padding: 100px 50px;
+    border-radius: 10px;
+  }
+}
 .bg-style {
   background: #efefef;
 }
 .color_fff {
   background: #fff;
+}
+.mt_100 {
+  margin-top: 100px;
 }
 .mt_40 {
   margin-top: 40px;
@@ -416,16 +454,15 @@ export default {
 
 .packet-image {
   position: relative;
-  top: 50px;
-  background: #fff;
+  top: 45px;
   z-index: 1;
-  width: 100px;
-  height: 100px;
-  border-radius: 50px 50px 50px 50px;
-  background: #e80b0b;
+  width: 80px;
+  height: 80px;
+  border-radius: 40px 40px 40px 40px;
+  background: #d14343ec;
 }
 .packet-amount-content {
-  margin-top: 100px;
+  // margin-top: 100px;
   flex-wrap: wrap;
   .packet-content {
     font-size: 14px;
@@ -447,7 +484,7 @@ export default {
     top: -12px;
     z-index: 2;
     font-size: 24px;
-    color: #00000041;
+    color: #f5f0f0;
   }
   .packet-amount {
     font-size: 20px;
@@ -455,6 +492,13 @@ export default {
   }
   .packet-amount-text {
     font-size: 18px;
+  }
+  .packet-query-text {
+    font-size: 18px;
+    padding: 50px 30px;
+    .van-loading__text {
+      color: #fff;
+    }
   }
   .packet-details-text {
     font-size: 14px;

@@ -3,9 +3,7 @@
     <van-row type="flex"
              justify="center">
       <van-col span="24">
-        <van-nav-bar title="领取详情"
-                     left-text="返回"
-                     @click-left="goBack" />
+        <van-nav-bar title="领取记录" />
       </van-col>
     </van-row>
     <van-row type="flex"
@@ -18,22 +16,25 @@
                 class="van-list-container">
         <van-cell>
           <span class="fl"
-                style="width: 45%;">红包备注</span>
+                style="width: 35%;">领取时间</span>
+
           <span class="fl"
                 style="width: 20%;">金额</span>
-          <span class="fl"
-                style="width: 35%;">时间</span>
+          <span class="fr"
+                style="width: 45%;text-align:right;">红包备注</span>
           <!-- <span class="fl"
                 style="width: 25%;"></span> -->
         </van-cell>
         <van-cell v-for="item in packetList"
                   :key="item.index">
           <span class="fl vote-time-wrap font_14"
-                style="width: 45%;">{{item.description}}</span>
-          <span class="fl vote-time-wrap font_14"
-                style="width: 20%;">{{item.amount|handleAmount|parseNum}}</span>
-          <span class="fl vote-time-wrap font_14"
                 style="width: 35%;">{{item.timeStr}}</span>
+
+          <span class="fl vote-time-wrap font_14"
+                style="width: 20%;">{{item.amount|handleAmount}}</span>
+          <span class="fl vote-time-wrap font_14"
+                style="width: 45%;text-align:right;">{{item.description}}</span>
+
         </van-cell>
       </van-list>
     </van-row>

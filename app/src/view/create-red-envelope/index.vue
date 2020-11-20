@@ -3,9 +3,10 @@
     <van-row type="flex"
              justify="center">
       <van-col span="24">
-        <van-nav-bar title="发红包"
+        <!-- <van-nav-bar title="发红包"
                      left-text="取消"
-                     @click-left="handleCancel" />
+                     @click-left="handleCancel" /> -->
+        <van-nav-bar title="发红包" />
       </van-col>
     </van-row>
 
@@ -30,9 +31,9 @@
                    type="number"
                    input-align="right" />
         <p v-if="packet.isRandom"
-           class="des-text-style">当前为拼手气红包，<span @click="typeChange(0)">改为普通红包</span></p>
+           class="des-text-style">余额:{{balance|handleAmount3}}，当前为拼手气红包，<span @click="typeChange(0)">改为普通红包</span></p>
         <p v-else
-           class="des-text-style">当前为普通红包，<span @click="typeChange(1)">改为拼手气红包</span></p>
+           class="des-text-style">余额:{{balance|handleAmount3}}，当前为普通红包，<span @click="typeChange(1)">改为拼手气红包</span></p>
       </van-col>
     </van-row>
 
@@ -110,10 +111,12 @@
 <script>
 import NodeRSA from 'node-rsa';
 import { Base64 } from 'js-base64';
+import { debounceHign } from '@/utils/request-limit'
 export default {
   name: "index",
   data () {
     return {
+      balance: 0,
       packet: {
         amount: '',
         description: '',
@@ -135,6 +138,7 @@ export default {
   },
   mounted () {
     this.initInstance();
+    this.getBalance();
   },
   methods: {
     /**
@@ -173,35 +177,36 @@ export default {
         // deployedNetwork.address,
       ).at(this.contract.address);
       window.instance = this.contract.instance;
-      console.log("ret  ");
-      console.log(this.contract.instance);
-      console.log(this.contract.instance.minAmount.call());
-      let bn = await this.contract.instance.minAmount.call()
-      bn = bn.toString();
-      console.log(bn);
+      // console.log("ret  ");
+      // console.log(this.contract.instance);
+      // console.log(this.contract.instance.minAmount.call());
+      // let bn = await this.contract.instance.minAmount.call()
+      // bn = bn.toString();
+      // console.log(bn);
+
       // this.contract.instance.methods.minAmount().call().then(res => {
       //   console.log(res);
       // });
       // this.contract.instance.queryPacketInfo.call("0xFFca4D048Ff11101bb3B5Ba26AEbad2504BE4705").then(res => {
       //   console.log(res);
       // })
-      let that = this;
-      this.contract.instance.queryPacketInfo.call("0x01d3783673C587FAB5F4b4AdfE30ce471b35C2ca", function (err, res) {
-        if (err) {
-          console.log("err")
-          console.log(err)
-        } else {
-          let str = res.toString()
-          console.log(str);
-          let strSlice = "0x" + str.slice(10);
-          if (str.indexOf("0x08c379a0") == 0) {
-            console.log(that.$Web3.eth.abi.decodeParameter("string", strSlice))
-          } else {
-            // console.log(that.$Web3.eth.abi.decodeParameter("string", str))
-            console.log(that.$Web3.eth.abi.decodeParameters(that.contract.instance.abi[9].outputs, res))
-          }
-        }
-      });
+      // let that = this;
+      // this.contract.instance.queryPacketInfo.call("0x01d3783673C587FAB5F4b4AdfE30ce471b35C2ca", function (err, res) {
+      //   if (err) {
+      //     console.log("err")
+      //     console.log(err)
+      //   } else {
+      //     let str = res.toString()
+      //     console.log(str);
+      //     let strSlice = "0x" + str.slice(10);
+      //     if (str.indexOf("0x08c379a0") == 0) {
+      //       console.log(that.$Web3.eth.abi.decodeParameter("string", strSlice))
+      //     } else {
+      //       // console.log(that.$Web3.eth.abi.decodeParameter("string", str))
+      //       console.log(that.$Web3.eth.abi.decodeParameters(that.contract.instance.abi[9].outputs, res))
+      //     }
+      //   }
+      // });
       // console.log("createRedPacket----");
       // this.contract.instance.createRedPacket.call(1, true, "", "0xFFca4D048Ff11101bb3B5Ba26AEbad2504BE4705", function (err, res) {
       //   if (err) {
@@ -222,7 +227,8 @@ export default {
       // this.$router.push({path: '/packet-details'});
       this.$router.push({ path: '/homepage' });
     },
-    async handleCreate () {
+    // async handleCreate :handleUserVote {
+      handleCreate : debounceHign(function(){
 
       // setTimeout(function () { alert("Hello"); }, 3000);
       console.log(Number(this.packet.total))
@@ -237,6 +243,11 @@ export default {
       let totalValue = this.packet.isRandom ? Number(this.packet.amount) : Number(this.packet.amount) * Number(this.packet.total);
       if (this.packet.amount === '' || this.packet.amount === '.' || totalValue / Number(this.packet.total) < 0.01) {
         this.$toast('单个红包的金额至少0.01moac');
+        return false;
+      }
+      if (totalValue > this.balance) {
+        console.log(new Date())
+        this.$toast('红包金额大于钱包余额');
         return false;
       }
       if (this.packet.description === '') this.packet.description = '恭喜发财，大吉大利';
@@ -281,7 +292,7 @@ export default {
           }
           const qrCodeMsg = this.packet.redPacketAccount.privateKey;
           // this.$toast('操作成功')
-          this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
+          this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey ,dc:this.packet.description,ow:this.packet.owner} });
         }
         if (!res.result) {
           if ("replacement transaction underpriced" == res.data) {
@@ -295,7 +306,7 @@ export default {
         console.log(error);
       });
       // this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
-    },
+    },2000),
     typeChange (type) {
       type === 1 ? this.packet.isRandom = true : this.packet.isRandom = false;
     },
@@ -310,6 +321,11 @@ export default {
       console.log("create_key" + account)
       this.packet.owner = account;
 
+    },
+    //初始化钱包地址和红包公私钥
+    getBalance () {
+      this.balance = this.$Web3.utils.fromWei(this.$chain3.mc.getBalance(this.packet.owner).toString(10))
+      // this.balance=5511.248
     },
 
     //创建合约
@@ -347,6 +363,30 @@ export default {
     //     }
     //   })
     // }
+  },
+  filters: {
+    handleStr (str) {
+      if (str.length > 12) {
+        const str1 = str.substring(0, 8);
+        const str2 = str.substr(str.length - 4, 4);
+        const _subStr = str1 + '...' + str2;
+        return _subStr.toLowerCase();
+      } else {
+        return str;
+      }
+    },
+    handleAmount (amount) {
+      return Number(amount).toFixed(6);
+    },
+    handleAmount2 (amount) {
+      return Number(amount).toFixed(2);
+    },
+    handleAmount3 (amount) {
+      return Math.floor(Number(amount * 100)) / 100;
+    },
+    parseNum (amount) {
+      return parseFloat(amount);
+    }
   }
 }
 </script>
