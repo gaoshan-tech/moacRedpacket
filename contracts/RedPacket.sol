@@ -395,7 +395,7 @@ contract RedPacket {
         bytes32 s,
         bytes1 v1
     ) private view returns (address addr) {
-        //此处贼坑
+        //此处有坑
         //web3.eth.sign(msghash,address)生成的签名v值是没有加上27的，msghash=web3.sha3(msg)
         //web3.eth.accounts.create().sign(msghash)生成的签名v值是加过27的
         //如果要用ecrecover()算法来验签，需对v值加27来组成27，28这两个值中的一个2。

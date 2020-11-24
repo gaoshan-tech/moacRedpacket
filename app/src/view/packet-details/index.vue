@@ -1,13 +1,5 @@
 <template>
   <div>
-    <!-- <van-row type="flex" justify="center">
-            <van-col span="24">
-                <van-nav-bar title="领取详情"
-                             right-text="我的红包记录"
-                             @click-right="getPersonalPacket"/>
-            </van-col>
-        </van-row>-->
-
     <van-row type="flex"
              justify="center"
              class="container">
@@ -52,9 +44,6 @@
                 class="van-list-container">
         <van-cell>
           <span class="fl">已领取 {{this.packet.totalNumber - this.packet.remainNumber}} / {{packet.totalNumber}}个，共{{(this.packet.totalAmount - this.packet.remainAmount)|handleAmount2}}/{{this.packet.totalAmount|handleAmount2}}moac</span>
-          <!-- <span class="fr"
-                style="color:dodgerblue;"
-                @click="getPersonalPacket">我的红包记录</span> -->
         </van-cell>
         <van-cell v-for="item in packet.list"
                   :key="item.index">
@@ -156,12 +145,13 @@ export default {
             that.packet.description = packetInfo.description;
             that.packet.isRandom = packetInfo.isRandom;
             that.packet.owner = packetInfo.owner;
-            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString(10)),
-            that.packet.remainNumber = packetInfo.remainNumber;
-            that.packet.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
-            // (new Date()).getTime() / 1000 - packetInfo.startTime > 24 * 3600;
             that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString(10));
             that.packet.totalNumber = packetInfo.totalNumber;
+            that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString(10)),
+              that.packet.remainNumber = packetInfo.remainNumber;
+            that.packet.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
+            // (new Date()).getTime() / 1000 - packetInfo.startTime > 24 * 3600;
+
             console.log(that.packet);
             that.queryReceiveDetails();
             return
@@ -175,11 +165,6 @@ export default {
     */
     async queryReceiveDetails () {
       const that = this;
-      //   console.log("queryReceiveDetails  ")
-      //   console.log(this.packet.totalNumber)
-      //   console.log(this.packet.remainNumber)
-      //   console.log(this.packet.addr)
-
       for (let i = 0; i < this.packet.totalNumber - this.packet.remainNumber; i++) {
         console.log("queryReceiveDetails  " + i)
         this.contract.instance.queryReceiveDetails.call(this.packet.addr, i, function (err, res) {
@@ -206,20 +191,7 @@ export default {
                 that.packet.amount = record.amount;
               }
               that.pushList(record);
-              //   that.packet.addr = packetInfo.addr;
-              //   that.packet.description = packetInfo.description;
-              //   that.packet.isRandom = packetInfo.isRandom;
-              //   that.packet.owner = packetInfo.owner;
-              //   that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString()),
-              //     that.packet.remainNumber = packetInfo.remainNumber;
-              //   that.packet.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]
-              //   // (new Date()).getTime() / 1000 - packetInfo.startTime > 24 * 3600;
-              //   that.packet.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount.toString());
-              //   that.packet.totalNumber = packetInfo.totalNumber;
-              //   console.log(that.packet);
-              //   return
             }
-            // that.$toast("未查询红包信息")
           }
         });
       }
@@ -229,8 +201,6 @@ export default {
       let that = this;
       this.contract.instance.ReceiveRedPacketEvent({ packetAddr: this.packet.addr }, { fromBlock: "latest", toBlock: "latest" }, function (err, res) {
         if (err) {
-          //   console.log("err")
-          //   console.log(err)
         } else {
           console.log("res");
           console.log(res);
@@ -247,25 +217,8 @@ export default {
       })
     },
 
-
-    // /**
-    //  * 收回未领完的过期红包
-    //  * @returns {Promise<void>}
-    //  */
-    // async recyclePacket() {
-    //     const { recyclePacket } = this.contract.instance.methods;
-    //     const that = this;
-    //     await recyclePacket(this.qrCode.packetId).send({from: this.msg.formAddress}).on('receipt', function (receipt) {
-    //         console.log('收回未领完的过期红包', receipt);
-    //     }).on('error', function(error) {
-    //         that.$toast(error.message);
-    //     })
-    // },
-
     getPersonalPacket () {
-      /* for(let i = 0; i < this.msg.packetIds.length; i++) {
-           this.getPacketMsg(this.msg.packetIds[i], true);
-       }*/
+
       this.$router.push({ path: '/personal-packets', query: { packetIds: this.msg.packetIds.join(',') } });
     },
     //给添加抢记录并排序去重
@@ -281,6 +234,7 @@ export default {
       this.packet.list.sort((a, b) => { return b.time - a.time });
       //修改已领取数量
       this.packet.remainNumber = this.packet.totalNumber - this.packet.list.length;
+      this.packet.remainNumber > 0 ? this.packet.remainNumber : this.packet.remainNumber = 0
     }
   },
   filters: {

@@ -1,32 +1,11 @@
 <template>
   <div class="wallet">
-    <!-- <van-row type="flex"
-             justify="center"
-             class="mt_30">
-      <van-col span="22">
-        <p class="select-title">请选择墨客钱包</p>
-      </van-col>
-    </van-row>
-
-    <van-row type="flex"
-             justify="center"
-             class="mt_10">
-      <van-col span="22">
-        <van-dropdown-menu class="dropdown-wrap">
-          <van-dropdown-item v-model="account"
-                             :options="addOpt"
-                             @closed="perReceiveRedPacket"
-                             class="dropdown-item-wrap" />
-        </van-dropdown-menu>
-      </van-col>
-    </van-row> -->
     <div class="content">
       <van-row v-if="packet.status!='error'"
                type="flex"
                justify="center"
                class="packet-amount-content">
         <van-col class="packet-content">{{this.packet.owner | handleStr}}的红包</van-col>
-        <!--<van-col class="packet-content">{{msg.amount}}</van-col>-->
       </van-row>
       <van-row type="flex"
                justify="center"
@@ -212,34 +191,11 @@ export default {
               that.packet.status = "normal"
             }
           } 
-          // else {
-          //   if (str.length > 10) {
-          //     that.packet.status = "normal"
-          //   }
-          // }
+
 
         }
 
       });
-      // if (that.packet.status != "error") {
-      //   return
-      // }
-      // let start = (new Date()).getMilliseconds();
-      // while ((new Date()).getMilliseconds() - start < 3000) {
-      //   continue;
-      // }
-      // this.contract.instance.ReceiveRedPacketEvent({ receiveAddr: "0xd3c4372227b81903993767213e5b386567f67e38" }, { fromBlock: 6046381, toBlock: "latest" }, function (err, res) {
-      // this.contract.instance.CreateRedPacketEvent({ receiveAddr: "0xd3c4372227b81903993767213e5b386567f67e38" }, { fromBlock: 6046395, toBlock: 6046395 }, function (err, res) {
-
-      //   // this.contract.instance.CreateRedPacketEvent({ createAddr: "0xd3c4372227b81903993767213e5b386567f67e38" }, {fromBlock: 6046381, toBlock: 6046381 }, function (err, res) {
-      //   if (err) {
-      //     // console.log("err")
-      //     // console.log(err)
-      //   } else {
-      //     console.log(res);
-      //   }
-      // })
-
     },
 
     //获取红包基本信息
@@ -262,6 +218,7 @@ export default {
             // console.log(packetInfo)
             that.packet.addr = packetInfo.addr;
             that.packet.description = packetInfo.description;
+            // that.packet.description = "大方李杰了阿斯顿发了阿斯顿的李康分阿索罗地方"
             that.packet.isRandom = packetInfo.isRandom;
             that.packet.owner = packetInfo.owner;
             that.packet.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount.toString(10)),
@@ -384,19 +341,6 @@ export default {
         }
       })
     },
-    /**
-     * 收回未领完的过期红包
-     * @returns {Promise<void>}
-     */
-    // async recyclePacket () {
-    //   const { recyclePacket } = this.contract.instance.methods;
-    //   const that = this;
-    //   await recyclePacket(this.qrCode.packetId).send({ from: this.msg.formAddress }).on('receipt', function (receipt) {
-    //     console.log('收回未领完的过期红包', receipt);
-    //   }).on('error', function (error) {
-    //     that.$toast(error.message);
-    //   })
-    // },
   },
   filters: {
     handleStr (str) {
@@ -487,8 +431,13 @@ export default {
     color: #f5f0f0;
   }
   .packet-amount {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
+      text-align: center;
+  // white-space: nowrap;
+  width: 216px;
+  word-wrap: break-word;
+  word-break: normal;
   }
   .packet-amount-text {
     font-size: 18px;

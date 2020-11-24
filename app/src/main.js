@@ -16,7 +16,6 @@ const web3 = new Web3(
 )
 Vue.prototype.$Web3 = web3
 Vue.prototype.$RedPacketArtifact = RedPacketArtifact
-
 import {
   Row,
   Col,
@@ -99,20 +98,7 @@ Vue.prototype.$chain3 = chain3
 Vue.prototype.$contract_address = '0xe05cdda8e6ca466738d6ac51fe11ee648e3a70d4'
 // console.log(chain3);
 
-/*import IndexDBWrapper from "indexdbwrapper";
-const db = new IndexDBWrapper("sunshineData", 1, {
-    onupgradeneeded: e => {
-        const db = e.target.result;
-        const objStore = db.createObjectStore("t1", {
-            autoIncrement: true,
-            keyPath: "id"
-        });
-        objStore.createIndex("name", "name" );
-        objStore.createIndex("key", "key");
-    }
-})
-Vue.prototype.$db = db;
-console.log(db);*/
+
 
 function getServerConfig() {
   return new Promise((resolve, reject) => {

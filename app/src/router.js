@@ -38,7 +38,7 @@ const routes = [
     name: 'create-success',
     component: () => import('./view/create-success'),
     meta: {
-      title: '创建红包'
+      title: '创建成功'
     }
   },
   {
@@ -66,10 +66,9 @@ const routes = [
     name: 'create-record',
     component: () => import('./view/create-record'),
     meta: {
-      title: '红包领取记录'
+      title: '红包创建记录'
     }
   },
-
 ];
 
 // add route path

@@ -5,48 +5,12 @@
       <div class="_top"
            id="qrCode"
            ref="qrCodeDiv"></div>
-      <!-- <div class="box">
-        <img :src="imgsrc"
-             alt="">
-      </div> -->
       <div class="packet"
            ref="title">{{ow|handleStr}}的红包</div>
-                 <div class="dc"
-           ref="dc">{{dc|handleStr}}</div>
+      <div class="dc"
+           ref="dc">{{dc}}</div>
       <div class="tp"
            ref="tp">请使用TP钱包扫描领取</div>
-      <!-- <div class="_bottom"
-           ref="bottom"> -->
-      <!-- fill="#E83828" -->
-      <!-- fill="#C30D23" -->
-      <!-- fill="#EBC14C" -->
-      <!-- <svg t="1604565796713"
-             class="icon"
-             viewBox="0 0 1024 1024"
-             version="1.1"
-             xmlns="http://www.w3.org/2000/svg"
-             p-id="2434"
-             width="500"
-             height="500"> -->
-      <!-- <path d="M183.912765 45.978191h650.262989v932.700449H183.912765z"
-                fill="#fff"
-                p-id="2435"
-                data-spm-anchor-id="a313x.7781069.0.i2"
-                class=""></path>
-          <path d="M186.54009 45.978191h651.576652L512.328416 534.003849z"
-                fill="#fff"
-                p-id="2436"
-                data-spm-anchor-id="a313x.7781069.0.i1"
-                class="selected"></path> -->
-      <!-- <path d="M512.328416 507.730597m-191.137909 0a191.137909 191.137909 0 1 0 382.275818 0 191.137909 191.137909 0 1 0-382.275818 0Z"
-                fill="#EBC14C"
-                p-id="2437"
-                data-spm-anchor-id="a313x.7781069.0.i0"
-                class="selected"></path> -->
-      <!-- </svg> -->
-      <!-- </div> -->
-
-      <!-- <p class="mt_20">截图保存</p> -->
     </div>
     <div class="btns">
       <p>
@@ -90,6 +54,7 @@ export default {
     getUrlParams () {
       this.qrCode.key = this.$route.query.key;
       this.dc = this.$route.query.dc;
+      // this.dc = "大方李杰了阿斯顿发了阿斯顿的李康分阿索罗地方"
       this.ow = this.$route.query.ow;
       console.log('key', this.qrCode.key);
     },
@@ -231,13 +196,18 @@ export default {
   justify-content: center;
   font-size: 20px;
 }
-.dc{
+.dc {
   color: #ebc14c;
   position: absolute;
   z-index: 99;
   // top: 120px;
   top: 70px;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
+  text-align: center;
+  // white-space: nowrap;
+  width: 216px;
+  word-wrap: break-word;
+  word-break: normal;
 }
 </style>

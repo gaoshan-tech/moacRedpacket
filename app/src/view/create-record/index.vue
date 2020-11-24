@@ -3,8 +3,7 @@
     <van-row type="flex"
              justify="center">
       <van-col span="24">
-        <van-nav-bar title="发送记录"
-                   />
+        <van-nav-bar title="发送记录" />
       </van-col>
     </van-row>
     <van-row type="flex"
@@ -16,15 +15,6 @@
                 :span="24"
                 class="van-list-container">
         <van-cell>
-          <!-- address packetAddr,
-            uint256 startTime,
-            string memory description,
-            uint256 totalNumber,
-            uint256 remainNumber,
-            bool isRandom,
-            uint256 totalAmount,
-            uint256 remainAmount,
-            uint256 totalNum -->
           <span class="fl"
                 style="width: 45%;">发送时间</span>
           <span class="fl"
@@ -36,21 +26,17 @@
         </van-cell>
         <van-cell v-for="item in packetList"
                   :key="item.index">
-          <!-- <span class="fl font_14" style="width: 25%;">{{item.isRandom ? '随机红包' : '普通红包'}}</span> -->
           <span @click="getPacketDetails(item.packetAddr)">
             <span class="fl name-wrap"
                   style="width: 45%;">
-              <!-- <span class="db font_14">{{item.description}}</span> -->
               <span class="db font_14 ">{{item.startTimeStr}}</span>
             </span>
             <span class="fl name-wrap"
                   style="width: 20%;">
-              <!-- <span class="db font_14">{{item.remainAmount|handleAmount}}</span> -->
               <span class="db font_14">{{item.totalAmount|handleAmount}}</span>
             </span>
             <span class="fl name-wrap"
                   style="width: 15%;">
-              <!-- <span class="db font_14">{{item.remainNumber}}</span> -->
               <span class="db font_14"> {{item.totalNumber}}</span>
             </span>
           </span>
@@ -103,7 +89,7 @@ export default {
     /**
      * 收回未领完的过期红包
      */
-     recyclePacket :debounceHign( function(packetAddr)  {
+    recyclePacket: debounceHign(function (packetAddr) {
       const that = this;
       const { recyclePacket } = this.contract.instance;
       console.log(this.account)
@@ -151,7 +137,7 @@ export default {
         console.log(error);
       });
 
-    },2000),
+    }, 2000),
     //初始化合约
     async initInstance () {
       this.contract.instance = this.$chain3.mc.contract(
@@ -224,10 +210,10 @@ export default {
               console.log(packetInfo)
               let record = {};
               record.packetAddr = packetInfo.packetAddr
-              record.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount);
-              record.remainNumber = packetInfo.remainNumber
               record.totalAmount = that.$Web3.utils.fromWei(packetInfo.totalAmount);
               record.totalNumber = packetInfo.totalNumber
+              record.remainAmount = that.$Web3.utils.fromWei(packetInfo.remainAmount);
+              record.remainNumber = packetInfo.remainNumber
               record.description = packetInfo.description
               record.expired = Number(packetInfo.startTime) + 3600 * 24 < new Date().getTime() / 1000
               record.startTime = new Date(packetInfo.startTime * 1000);//startTime.toLocaleDateString()+" "+startTime.toTimeString().split(" ")[0]

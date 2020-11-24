@@ -4,8 +4,8 @@
              justify="center">
       <van-col span="24">
         <!-- <van-nav-bar title="发红包"
-                     left-text="取消"
-                     @click-left="handleCancel" /> -->
+                     right-text="设置"
+                     @click-right="goSetting" /> -->
         <van-nav-bar title="发红包" />
       </van-col>
     </van-row>
@@ -62,7 +62,7 @@
                    autosize
                    label=""
                    type="textarea"
-                   maxlength="10"
+                   maxlength="22"
                    show-word-limit
                    placeholder="恭喜发财，大吉大利" />
       </van-col>
@@ -109,8 +109,6 @@
 </template>
 
 <script>
-import NodeRSA from 'node-rsa';
-import { Base64 } from 'js-base64';
 import { debounceHign } from '@/utils/request-limit'
 export default {
   name: "index",
@@ -156,79 +154,22 @@ export default {
       console.log("account");
       const gasPrice = this.$chain3.mc.gasPrice;
       console.log(gasPrice.toString(10));
-      // console.log(tp);
-      // console.log(this.$chain3.version.network);
-      // console.log(this.$chain3.signTransaction("0x000","0x348ce564d427a3311b6536bbcff9390d69395b06ed6c486954e971d960fe8709"))
-      // const networkId = await this.$Web3.mc.net.getId();
       const networkId = this.$chain3.version.network
       const deployedNetwork = this.$RedPacketArtifact.networks[networkId];
-      // const account = await this.$Web3.eth.getAccounts()
-      // console.log("account");
-      // console.log(account);
-      // this.contract.account = account[0]
-      // console.log(this.$chain3.mc.getTransactionReceipt("0x7a887bc23b95de53d888d8ed50096f6cf8dfb9927f83467356b4d2b0ef38b6c5"));
-      // this.contract.instance = new this.$chain3.mc.Contract(
-      //   this.$RedPacketArtifact.abi,
-      //   // deployedNetwork.address,
-      //   "0xFFca4D048Ff11101bb3B5Ba26AEbad2504BE4705"
-      // );
+
       this.contract.instance = this.$chain3.mc.contract(
         this.$RedPacketArtifact.abi
         // deployedNetwork.address,
       ).at(this.contract.address);
       window.instance = this.contract.instance;
-      // console.log("ret  ");
-      // console.log(this.contract.instance);
-      // console.log(this.contract.instance.minAmount.call());
-      // let bn = await this.contract.instance.minAmount.call()
-      // bn = bn.toString();
-      // console.log(bn);
-
-      // this.contract.instance.methods.minAmount().call().then(res => {
-      //   console.log(res);
-      // });
-      // this.contract.instance.queryPacketInfo.call("0xFFca4D048Ff11101bb3B5Ba26AEbad2504BE4705").then(res => {
-      //   console.log(res);
-      // })
-      // let that = this;
-      // this.contract.instance.queryPacketInfo.call("0x01d3783673C587FAB5F4b4AdfE30ce471b35C2ca", function (err, res) {
-      //   if (err) {
-      //     console.log("err")
-      //     console.log(err)
-      //   } else {
-      //     let str = res.toString()
-      //     console.log(str);
-      //     let strSlice = "0x" + str.slice(10);
-      //     if (str.indexOf("0x08c379a0") == 0) {
-      //       console.log(that.$Web3.eth.abi.decodeParameter("string", strSlice))
-      //     } else {
-      //       // console.log(that.$Web3.eth.abi.decodeParameter("string", str))
-      //       console.log(that.$Web3.eth.abi.decodeParameters(that.contract.instance.abi[9].outputs, res))
-      //     }
-      //   }
-      // });
-      // console.log("createRedPacket----");
-      // this.contract.instance.createRedPacket.call(1, true, "", "0xFFca4D048Ff11101bb3B5Ba26AEbad2504BE4705", function (err, res) {
-      //   if (err) {
-      //     console.log("err")
-      //     console.log(err)
-      //   } else {
-      //     let str = res.toString()
-      //     if (str.indexOf("0x08c379a0") == 0) {
-      //       str = "0x" + str.slice(10);
-      //       console.log(that.$Web3.eth.abi.decodeParameter("string", str))
-      //     } else {
-      //       console.log(JSON.parse(JSON.stringify(res)))
-      //     }
-      //   }
-      // });
+     
     },
     handleCancel () {
       // this.$router.push({path: '/packet-details'});
       this.$router.push({ path: '/homepage' });
     },
     // async handleCreate :handleUserVote {
-      handleCreate : debounceHign(function(){
+    handleCreate: debounceHign(function () {
 
       // setTimeout(function () { alert("Hello"); }, 3000);
       console.log(Number(this.packet.total))
@@ -264,7 +205,7 @@ export default {
       const inputData = createRedPacket.getData(this.packet.total, this.packet.isRandom, this.packet.description, this.packet.redPacketAccount.address);
       console.log(inputData);
       console.log(this.packet.owner);
-      const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 260000;
+      const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 350000;
       console.log('gasLimit', gasLimit);
       console.log('system', this.$system);
       const query = {
@@ -292,7 +233,7 @@ export default {
           }
           const qrCodeMsg = this.packet.redPacketAccount.privateKey;
           // this.$toast('操作成功')
-          this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey ,dc:this.packet.description,ow:this.packet.owner} });
+          this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey, dc: this.packet.description, ow: this.packet.owner } });
         }
         if (!res.result) {
           if ("replacement transaction underpriced" == res.data) {
@@ -306,7 +247,7 @@ export default {
         console.log(error);
       });
       // this.$router.push({ path: '/create-success', query: { key: this.packet.redPacketAccount.privateKey } });
-    },2000),
+    }, 2000),
     typeChange (type) {
       type === 1 ? this.packet.isRandom = true : this.packet.isRandom = false;
     },
@@ -327,42 +268,6 @@ export default {
       this.balance = this.$Web3.utils.fromWei(this.$chain3.mc.getBalance(this.packet.owner).toString(10))
       // this.balance=5511.248
     },
-
-    //创建合约
-    // createdRedPacket2 () {
-    //   const inputData = ""
-    //   const gasLimit = this.$chain3.mc.estimateGas({ from: this.contract.account, data: inputData }) + 2100;
-    //   // console.log('inputData', inputData);
-    //   console.log('gasLimit', gasLimit);
-    //   console.log(this.$chain3.intToHex(1000000000))
-    //   console.log(this.getGasPrice())
-    //   const query = {
-    //     from: this.packet.account,
-    //     to: this.moacData.toAddress,
-    //     gasPrice: '0x' + this.getGasPrice(),
-    //     // gasPrice: 1000000000,
-
-    //     gasLimit: gasLimit,
-    //     data: inputData,
-    //     value: '0x0',
-    //     chainId: '0x63',
-    //     via: '0x',
-    //     shardingFlag: '0x0',
-    //   };
-    //   console.log('query', query);
-    //   this.$tp.sendMoacTransaction(query).then(res => {
-    //     if (res) {
-    //       // console.log('sendMoacTransaction', res);
-    //       const hash = res.data;
-    //       // this.voteData.hash = hash;
-    //       console.log('hash', hash);
-    //       if (!res.result) {
-    //         this.$toast('上链失败，请检查余额');
-    //         return false;
-    //       }
-    //     }
-    //   })
-    // }
   },
   filters: {
     handleStr (str) {

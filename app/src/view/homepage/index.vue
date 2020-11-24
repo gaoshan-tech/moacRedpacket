@@ -1,31 +1,5 @@
 <template>
   <div>
-    <!-- <van-row type="flex"
-             justify="center">
-      <van-col span="24">
-        <van-nav-bar title="首页" />
- </van-col>
-    </van-row> -->
-    <!-- <van-row type="flex"
-             justify="center"
-             class="mt_30">
-      <van-col span="22">
-        <p class="select-title">请选择墨客钱包</p>
-      </van-col>
-    </van-row>
-
-    <van-row type="flex"
-             justify="center"
-             class="mt_10">
-      <van-col span="22">
-        <van-dropdown-menu class="dropdown-wrap">
-          <van-dropdown-item v-model="account"
-                             :options="addOpt"
-                             @closed="bindAccount"
-                             class="dropdown-item-wrap" />
-        </van-dropdown-menu>
-      </van-col>
-    </van-row> -->
     <van-divider />
     <van-row type="flex"
              class="mt_30"
@@ -167,22 +141,6 @@ export default {
   methods: {
     // 获取钱包地址
     getWalletAddress () {
-      // tp.getCurrentWallet().then((res) => {
-      //   console.log(res.data.blockchain)
-      //   if (res.data.blockchain != "eth") {
-      //               // console.log("res.data   2323")
-      //     Dialog.confirm({
-      //       title: '提示',
-      //       message: '请切换moac钱包。',
-      //       confirmButtonText: '确定',
-      //       // beforeClose,
-      //     })
-      //     // tp.back()
-      //     // tp.close()
-      //     console.log("res.data   2323")
-      //   }
-      //    console.log("res.data")
-      // })
       console.log("account")
       console.log(this.$account)
       this.$tp.getWalletList(3).then(res => {
@@ -191,25 +149,18 @@ export default {
         const optData = res.wallets.moac;
         // this._blockchain = optData.blockchain;
         for (let index in optData) {
-          // console.info("address"+optData[index].address);
-          // console.info(optData[index].name);
           let item = {
             text: optData[index].name + ":" + optData[index].address,
             value: optData[index].address
           }
           this.addOpt.push(item);
-          // this.value = this.addOpt[0].value;
         }
-        // this.handleCreateRedEnvelope();
       })
     },
     bindAccount () {
       Vue.prototype.$account = this.account;
     },
     createRedEnvelope () {
-      /* for(let i = 0; i < this.msg.packetIds.length; i++) {
-           this.getPacketMsg(this.msg.packetIds[i], true);
-       }*/
       if (this.account == undefined) {
         Dialog.alert({
           message: '请选择钱包地址',
