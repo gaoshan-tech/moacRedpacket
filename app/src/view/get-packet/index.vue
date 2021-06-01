@@ -272,7 +272,8 @@ export default {
       // const inputData = receiveRedPacket.getData(this.packet.packetAccount.address, this.$Web3.utils.hexToBytes(signStr));
       const inputData = receiveRedPacket.getData(this.packet.packetAccount.address, signStr);
       console.log(inputData);
-      const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 210000;
+      // const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 210000;
+      const gasLimit =  220000;
       console.log('gasLimit', gasLimit);
       const query = {
         from: this.account,

@@ -205,7 +205,8 @@ export default {
       const inputData = createRedPacket.getData(this.packet.total, this.packet.isRandom, this.packet.description, this.packet.redPacketAccount.address);
       console.log(inputData);
       console.log(this.packet.owner);
-      const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 350000;
+      // const gasLimit = this.$chain3.mc.estimateGas({ to: this.contract.address, data: inputData }) + 350000;
+      const gasLimit =  360000;
       console.log('gasLimit', gasLimit);
       console.log('system', this.$system);
       const query = {

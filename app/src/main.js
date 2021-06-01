@@ -51,9 +51,9 @@ import axios from 'axios'
 Vue.prototype.$axios = axios
 Vue.prototype.$moment = moment
 
-// import VConsole from 'vconsole/dist/vconsole.min.js' //import vconsole
-// // todo
-// let vConsole = new VConsole() // 初始化
+import VConsole from 'vconsole/dist/vconsole.min.js' //import vconsole
+// todo
+let vConsole = new VConsole() // 初始化
 
 Vue.use(Row)
   .use(Col)
